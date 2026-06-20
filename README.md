@@ -7,7 +7,20 @@ A local-first CLI for commit messages, with two modes:
 1. **Generate** (`aicommit gen`) — reads your staged diff, generates a commit message with a local LLM (Gemma via [Ollama](https://ollama.com)), and commits on confirmation.
 2. **Verify** (a `commit-msg` git hook) — checks any commit message (typed or generated) for low-effort phrasing and prompts before letting it land.
 
-Everything runs locally. Your diffs and messages never leave the machine.
+**Local-first and private by default.** Your code, diffs, and commit messages never leave your machine — everything runs against a local Ollama model. No cloud API, no account, no telemetry. Unlike most AI commit tools, your private codebase is never sent to a third-party service.
+
+---
+
+## Local-first & private
+
+This is the core design choice, not an afterthought:
+
+- **Your data stays yours.** Diffs and messages are sent only to your local Ollama instance (`localhost` by default). Nothing is uploaded, logged remotely, or shared.
+- **No accounts, keys, or telemetry.** There's nothing to sign up for and nothing phoning home.
+- **Works offline.** Once the model is pulled, generation and verification need no network.
+- **You stay in control.** The only way data leaves your machine is if *you* point `ollamaHost` at a remote server — the default keeps everything local.
+
+For private or proprietary codebases where sending diffs to a hosted LLM is a non-starter, this runs entirely on your own hardware.
 
 ---
 
