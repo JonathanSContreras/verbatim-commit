@@ -10,6 +10,7 @@ import {
 import { budgetDiff, computeDiffBudgetTokens } from "../lib/diff.js";
 import { buildGenPrompt } from "../lib/prompts.js";
 import { checkMessage } from "../lib/heuristics.js";
+import { cleanCommitMessage } from "../lib/message.js";
 import { OllamaUnavailableError, generate } from "../lib/ollama.js";
 import { Prompter, editInEditor } from "../lib/prompt.js";
 
@@ -99,11 +100,12 @@ export async function gen(): Promise<number> {
         prompt,
         options,
       });
-      if (message === "") {
+      const cleaned = cleanCommitMessage(message);
+      if (cleaned === "") {
         console.error("Model returned an empty message.");
         return null;
       }
-      return message;
+      return cleaned;
     } catch (err) {
       if (err instanceof OllamaUnavailableError) {
         console.error(err.message);
