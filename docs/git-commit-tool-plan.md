@@ -160,6 +160,8 @@ Both are cheap (bounded, small token cost) and already partially scoped, so they
    - Message passes cleanly → exit 0 immediately, no interruption.
    - Flagged + user says "no" → exit non-zero, git aborts commit.
    - Flagged + user says "yes" → exit 0, commit proceeds.
+   - **Default on empty input (Enter):** prompt is `(y/N)` — Enter aborts. **Resolved:** the lazy/reflexive keystroke nudges toward writing a better message; overriding is still one keystroke (`y`). Soft means *easy to override*, which one keystroke satisfies, not *defaults to letting weak messages through*.
+   - **No controlling terminal** (CI, GUI git clients, scripts) → no prompt; commit always proceeds, so automation is never blocked.
 
 **Key UX rule:** soft warning, not a hard block by default — avoid the tool becoming something that gets `--no-verify`'d into irrelevance.
 

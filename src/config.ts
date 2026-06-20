@@ -53,13 +53,97 @@ export const DEFAULT_CONFIG: Config = {
   llmVerifyEnabled: false,
 };
 
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
+
+const REPO_CONFIG_NAME = ".aicommitrc";
+
+/** Global config directory (override with AICOMMIT_HOME). */
+function globalConfigDir(): string {
+  return process.env.AICOMMIT_HOME || join(homedir(), ".aicommit");
+}
+
+function readJsonIfExists(path: string): Partial<Config> | null {
+  if (!existsSync(path)) return null;
+  try {
+    const parsed = JSON.parse(readFileSync(path, "utf8"));
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Partial<Config>;
+    }
+    console.error(`Warning: ignoring config at ${path} (not a JSON object).`);
+    return null;
+  } catch (err) {
+    console.error(`Warning: ignoring invalid config at ${path}: ${(err as Error).message}`);
+    return null;
+  }
+}
+
+/** Walk up from `startDir` to the repo root looking for a per-repo config. */
+function findRepoConfig(startDir: string): Partial<Config> | null {
+  let dir = startDir;
+  for (;;) {
+    const found = readJsonIfExists(join(dir, REPO_CONFIG_NAME));
+    if (found) return found;
+    if (existsSync(join(dir, ".git"))) break; // reached repo root
+    const parent = dirname(dir);
+    if (parent === dir) break; // reached filesystem root
+    dir = parent;
+  }
+  return null;
+}
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/** Deep-merge `override` onto `base` (nested objects merged; arrays replaced). */
+function deepMerge<T>(base: T, override: Partial<T> | null): T {
+  if (!override) return base;
+  const result: Record<string, unknown> = { ...(base as Record<string, unknown>) };
+  for (const [key, value] of Object.entries(override)) {
+    if (value === undefined) continue;
+    if (isPlainObject(value) && isPlainObject(result[key])) {
+      result[key] = deepMerge(result[key], value as Record<string, unknown>);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result as T;
+}
+
+/** Drop values with the wrong type so a malformed file can't corrupt config. */
+function sanitize(cfg: Config): Config {
+  const out = { ...cfg };
+  if (out.messageFormat !== "plain" && out.messageFormat !== "conventional") {
+    out.messageFormat = DEFAULT_CONFIG.messageFormat;
+  }
+  if (typeof out.minWordCount !== "number" || out.minWordCount < 0) {
+    out.minWordCount = DEFAULT_CONFIG.minWordCount;
+  }
+  if (
+    typeof out.diffBudgetFraction !== "number" ||
+    out.diffBudgetFraction <= 0 ||
+    out.diffBudgetFraction > 1
+  ) {
+    out.diffBudgetFraction = DEFAULT_CONFIG.diffBudgetFraction;
+  }
+  if (!Array.isArray(out.blocklist)) out.blocklist = DEFAULT_CONFIG.blocklist;
+  if (typeof out.hookEnabled !== "boolean") out.hookEnabled = DEFAULT_CONFIG.hookEnabled;
+  if (typeof out.llmVerifyEnabled !== "boolean") {
+    out.llmVerifyEnabled = DEFAULT_CONFIG.llmVerifyEnabled;
+  }
+  return out;
+}
+
 /**
- * Load effective config.
- *
- * Milestone 2: returns defaults only. Milestone 8 adds file loading with
- * global (`~/.<tool>/config.json`) + per-repo (`.<tool>rc`) deep-merge
- * precedence — see docs/git-commit-tool-plan.md.
+ * Load effective config: defaults < global (`~/.aicommit/config.json`) <
+ * per-repo (`.aicommitrc`), deep-merged key by key. See
+ * docs/git-commit-tool-plan.md.
  */
-export function loadConfig(): Config {
-  return DEFAULT_CONFIG;
+export function loadConfig(cwd: string = process.cwd()): Config {
+  let cfg: Config = DEFAULT_CONFIG;
+  cfg = deepMerge(cfg, readJsonIfExists(join(globalConfigDir(), "config.json")));
+  cfg = deepMerge(cfg, findRepoConfig(cwd));
+  return sanitize(cfg);
 }
