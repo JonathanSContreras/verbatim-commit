@@ -37,6 +37,52 @@ export async function getStagedDiff(cwd: string = process.cwd()): Promise<string
   return runGit(["diff", "--cached"], cwd);
 }
 
+export interface FileChange {
+  /** Human-readable status: added, modified, deleted, renamed, etc. */
+  status: string;
+  /** File path; for renames/copies, "old -> new". */
+  path: string;
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  A: "added",
+  M: "modified",
+  D: "deleted",
+  R: "renamed",
+  C: "copied",
+  T: "type changed",
+};
+
+/**
+ * Complete inventory of staged file changes (added/modified/deleted/renamed),
+ * independent of diff content budgeting — so binary/lockfile/large-file changes
+ * are never lost from the model's view even when their content is filtered out.
+ */
+export async function getStagedFileChanges(
+  cwd: string = process.cwd(),
+): Promise<FileChange[]> {
+  let out: string;
+  try {
+    out = await runGit(["diff", "--cached", "-M", "--name-status"], cwd);
+  } catch {
+    return [];
+  }
+
+  const changes: FileChange[] = [];
+  for (const line of out.split("\n")) {
+    if (!line.trim()) continue;
+    const parts = line.split("\t");
+    const code = parts[0][0];
+    const status = STATUS_LABELS[code] ?? code;
+    if ((code === "R" || code === "C") && parts.length >= 3) {
+      changes.push({ status, path: `${parts[1]} -> ${parts[2]}` });
+    } else {
+      changes.push({ status, path: parts[parts.length - 1] });
+    }
+  }
+  return changes;
+}
+
 /** Current branch name (empty on a detached HEAD or fresh repo). */
 export async function getCurrentBranch(cwd: string = process.cwd()): Promise<string> {
   try {

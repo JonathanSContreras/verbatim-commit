@@ -3,6 +3,7 @@ import {
   getCurrentBranch,
   getRecentCommitSubjects,
   getStagedDiff,
+  getStagedFileChanges,
   isGitRepo,
 } from "../lib/git.js";
 import { budgetDiff, computeDiffBudgetTokens } from "../lib/diff.js";
@@ -44,13 +45,15 @@ export async function gen(): Promise<number> {
     return 1;
   }
 
-  const [branch, recentSubjects] = await Promise.all([
+  const [branch, recentSubjects, fileChanges] = await Promise.all([
     getCurrentBranch(cwd),
     getRecentCommitSubjects(5, cwd),
+    getStagedFileChanges(cwd),
   ]);
 
   const { system, prompt } = buildGenPrompt({
     diff: budgeted.text,
+    fileChanges,
     branch,
     recentSubjects,
     messageFormat: config.messageFormat,
