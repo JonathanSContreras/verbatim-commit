@@ -36,3 +36,30 @@ export async function isGitRepo(cwd: string = process.cwd()): Promise<boolean> {
 export async function getStagedDiff(cwd: string = process.cwd()): Promise<string> {
   return runGit(["diff", "--cached"], cwd);
 }
+
+/** Current branch name (empty on a detached HEAD or fresh repo). */
+export async function getCurrentBranch(cwd: string = process.cwd()): Promise<string> {
+  try {
+    const out = await runGit(["rev-parse", "--abbrev-ref", "HEAD"], cwd);
+    const branch = out.trim();
+    return branch === "HEAD" ? "" : branch;
+  } catch {
+    return "";
+  }
+}
+
+/** Subjects of the most recent commits (empty on a repo with no commits yet). */
+export async function getRecentCommitSubjects(
+  count = 5,
+  cwd: string = process.cwd(),
+): Promise<string[]> {
+  try {
+    const out = await runGit(["log", "-n", String(count), "--format=%s"], cwd);
+    return out
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
