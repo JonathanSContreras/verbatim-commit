@@ -2,6 +2,7 @@
   "name": "ai-commit-tool",
   "version": "0.1.0",
   "description": "Local-first AI commit message generator + low-effort commit verifier",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "aicommit": "./dist/cli.js"
