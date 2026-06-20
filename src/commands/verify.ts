@@ -3,6 +3,7 @@ import { loadConfig } from "../config.js";
 import { getRecentCommitSubjects } from "../lib/git.js";
 import { checkMessage } from "../lib/heuristics.js";
 import { llmVerify } from "../lib/llm-verify.js";
+import { confirmTty } from "../lib/tty.js";
 
 /** First meaningful line of a message, for display. */
 function firstLine(message: string): string {
@@ -11,6 +12,26 @@ function firstLine(message: string): string {
     if (trimmed && !trimmed.startsWith("#")) return trimmed;
   }
   return "";
+}
+
+/**
+ * A message was flagged. Print the warning, then ask (on the terminal) whether
+ * to commit anyway. Returns the exit code: 0 to let the commit proceed, 1 to
+ * abort. With no terminal available (CI, GUI clients, scripts), defaults to
+ * proceeding so automation is never blocked.
+ */
+function handleFlagged(subject: string, reasons: string[]): number {
+  console.error("");
+  console.error(`⚠️  This commit message looks weak: "${subject}"`);
+  for (const reason of reasons) {
+    console.error(`   - ${reason}`);
+  }
+
+  const proceed = confirmTty("\nCommit anyway? (y/N) ", true);
+  if (proceed) return 0;
+
+  console.error("Commit aborted — edit your message and commit again.");
+  return 1;
 }
 
 /**
@@ -44,14 +65,7 @@ export async function verify(messageFile: string): Promise<number> {
   );
 
   if (result.flagged) {
-    console.error("");
-    console.error(`⚠️  This commit message looks weak: "${firstLine(message)}"`);
-    for (const reason of result.reasons) {
-      console.error(`   - ${reason}`);
-    }
-    console.error("");
-    // TODO(milestone 7): prompt y/n via /dev/tty here and return non-zero on "no".
-    return 0;
+    return handleFlagged(firstLine(message), result.reasons);
   }
 
   // Heuristics passed. Optional LLM second-pass for a deeper "does this message
@@ -60,10 +74,10 @@ export async function verify(messageFile: string): Promise<number> {
   if (config.llmVerifyEnabled) {
     const verdict = await llmVerify(message, config);
     if (verdict?.weak) {
-      console.error("");
-      console.error(`⚠️  Second-opinion check flagged this message: "${firstLine(message)}"`);
-      if (verdict.reason) console.error(`   - ${verdict.reason}`);
-      console.error("");
+      return handleFlagged(
+        firstLine(message),
+        verdict.reason ? [verdict.reason] : ["does not clearly describe the change"],
+      );
     }
   }
 
