@@ -64,22 +64,36 @@ export async function gen(): Promise<number> {
     getStagedFileChanges(cwd),
   ]);
 
-  const { system, prompt } = buildGenPrompt({
+  const baseContext = {
     diff: budgeted.text,
     fileChanges,
     branch,
     recentSubjects,
     messageFormat: config.messageFormat,
-  });
+  };
+
+  // Messages the user has rejected via "regenerate", so we steer away from them.
+  const rejected: string[] = [];
 
   // Returns a candidate message, or null if generation failed (error printed).
-  const tryGenerate = async (): Promise<string | null> => {
+  // On regeneration, raise the temperature, use a fresh seed, and tell the
+  // model to avoid the rejected messages — small diffs are otherwise so
+  // high-confidence that the model keeps returning the same phrasing.
+  const tryGenerate = async (regenerate: boolean): Promise<string | null> => {
+    const { system, prompt } = buildGenPrompt({
+      ...baseContext,
+      avoid: regenerate ? rejected : [],
+    });
+    const options = regenerate
+      ? { temperature: 1.1, seed: Math.floor(Math.random() * 1_000_000_000) }
+      : undefined;
     try {
       const message = await generate({
         host: config.ollamaHost,
         model: config.model,
         system,
         prompt,
+        options,
       });
       if (message === "") {
         console.error("Model returned an empty message.");
@@ -96,7 +110,7 @@ export async function gen(): Promise<number> {
     }
   };
 
-  let current = await tryGenerate();
+  let current = await tryGenerate(false);
   if (current === null) return 1;
 
   // Non-interactive (piped) invocation: print and exit without committing.
@@ -146,7 +160,8 @@ export async function gen(): Promise<number> {
         case "n":
         case "no": {
           console.log("Regenerating…");
-          const next = await tryGenerate();
+          rejected.push(current);
+          const next = await tryGenerate(true);
           if (next !== null) current = next;
           break;
         }

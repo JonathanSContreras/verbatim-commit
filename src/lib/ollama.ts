@@ -14,11 +14,19 @@ export class OllamaModelError extends Error {
   }
 }
 
+export interface GenerateOptions {
+  temperature?: number;
+  /** Sampling seed; randomize to get different output for the same prompt. */
+  seed?: number;
+  top_p?: number;
+}
+
 export interface GenerateParams {
   host: string;
   model: string;
   prompt: string;
   system?: string;
+  options?: GenerateOptions;
 }
 
 interface OllamaGenerateResponse {
@@ -39,6 +47,7 @@ export async function generate(params: GenerateParams): Promise<string> {
         prompt: params.prompt,
         system: params.system,
         stream: false,
+        options: params.options,
       }),
     });
   } catch {

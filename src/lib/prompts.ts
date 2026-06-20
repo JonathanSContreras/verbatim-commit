@@ -7,6 +7,8 @@ export interface GenPromptContext {
   branch: string;
   recentSubjects: string[];
   messageFormat: MessageFormat;
+  /** Previously rejected messages to steer away from on regeneration. */
+  avoid?: string[];
 }
 
 /** Build the system + user prompt for generate mode. */
@@ -42,7 +44,17 @@ export function buildGenPrompt(ctx: GenPromptContext): {
       ...ctx.recentSubjects.map((s) => `- ${s}`),
     );
   }
-  parts.push("", "Staged diff:", ctx.diff, "", "Commit message:");
+  parts.push("", "Staged diff:", ctx.diff, "");
+
+  if (ctx.avoid && ctx.avoid.length > 0) {
+    parts.push(
+      "These messages were rejected — write a clearly different one (different wording and emphasis):",
+      ...ctx.avoid.map((m) => `- ${m.split("\n")[0]}`),
+      "",
+    );
+  }
+
+  parts.push("Commit message:");
 
   return { system, prompt: parts.join("\n") };
 }
