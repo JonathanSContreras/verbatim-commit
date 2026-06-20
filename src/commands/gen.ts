@@ -9,17 +9,21 @@ import {
 } from "../lib/git.js";
 import { budgetDiff, computeDiffBudgetTokens } from "../lib/diff.js";
 import { buildGenPrompt } from "../lib/prompts.js";
+import { checkMessage } from "../lib/heuristics.js";
 import { OllamaUnavailableError, generate } from "../lib/ollama.js";
 import { Prompter, editInEditor } from "../lib/prompt.js";
 
-/** Print a candidate message, each line indented for readability. */
-function printCandidate(message: string): void {
+/** Print a candidate message, with a soft warning if heuristics flag it. */
+function printCandidate(message: string, warnings: string[]): void {
   const indented = message
     .split("\n")
     .map((line) => "  " + line)
     .join("\n");
   console.log("\nGenerated commit message:\n");
   console.log(indented);
+  if (warnings.length > 0) {
+    console.log(`\n⚠️  Looks weak: ${warnings[0]}`);
+  }
   console.log("");
 }
 
@@ -122,7 +126,12 @@ export async function gen(): Promise<number> {
   const prompter = new Prompter();
   try {
     for (;;) {
-      printCandidate(current);
+      const { reasons } = checkMessage(
+        current,
+        { minWordCount: config.minWordCount, blocklist: config.blocklist },
+        recentSubjects[0],
+      );
+      printCandidate(current, reasons);
       const answer = (
         await prompter.question(
           "Use this message? [y]es / [e]dit / [r]egenerate / [q]uit: ",
