@@ -148,6 +148,26 @@ Example `.aicommitrc` for a work repo:
 }
 ```
 
+## Choosing a model
+
+Any model available in Ollama works — set `model` to whatever you prefer (`qwen2.5-coder`, `llama3.1`, a larger Gemma, etc.):
+
+```json
+{
+  "model": "qwen2.5-coder:7b",
+  "contextWindow": { "qwen2.5-coder:7b": 32768 }
+}
+```
+
+The default is **`gemma3:4b`** because it hits the sweet spot for a tool that runs on every commit:
+
+- **Runs anywhere.** ~3.3 GB and no GPU required — it's comfortable on a typical laptop.
+- **Fast.** Generation takes a few seconds, so it never becomes friction in your commit flow.
+- **Big context.** A 128K-token window comfortably fits large diffs (see [diff budgeting](#how-it-works)).
+- **Good quality for its size.** Summarizing a diff into a one-line subject is well within a small model's reach, so a 4B model gets you most of the value without the cost of a large one.
+
+Step up to a larger model if you want richer messages and can spare the RAM and latency. **When you switch, add a matching `contextWindow` entry** — diff budgeting uses it to size the diff, and falls back to a conservative 8192 tokens for unknown models.
+
 ## Cross-platform
 
 Works on macOS, Linux, and Windows. The interactive hook prompt reads the terminal directly (`/dev/tty` on POSIX, `CONIN$`/`CONOUT$` on Windows) since git owns stdin during a hook. The hook shim is LF-ended and runs via Git for Windows' bundled bash. (Windows is supported by design; primary testing has been on macOS.)
