@@ -180,6 +180,8 @@ npm run dev        # watch mode
 npm test           # build + run the test suite
 ```
 
+Built with AI assistance (Claude). Design decisions, testing, and direction are my own.
+
 ## Not in v1
 
 - Parsing `CONTRIBUTING.md` for commit conventions
