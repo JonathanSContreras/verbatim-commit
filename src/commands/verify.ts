@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { loadConfig } from "../config.js";
 import { getRecentCommitSubjects } from "../lib/git.js";
 import { checkMessage } from "../lib/heuristics.js";
+import { llmVerify } from "../lib/llm-verify.js";
 
 /** First meaningful line of a message, for display. */
 function firstLine(message: string): string {
@@ -42,14 +43,29 @@ export async function verify(messageFile: string): Promise<number> {
     recent[0],
   );
 
-  if (!result.flagged) return 0;
-
-  console.error("");
-  console.error(`⚠️  This commit message looks weak: "${firstLine(message)}"`);
-  for (const reason of result.reasons) {
-    console.error(`   - ${reason}`);
+  if (result.flagged) {
+    console.error("");
+    console.error(`⚠️  This commit message looks weak: "${firstLine(message)}"`);
+    for (const reason of result.reasons) {
+      console.error(`   - ${reason}`);
+    }
+    console.error("");
+    // TODO(milestone 7): prompt y/n via /dev/tty here and return non-zero on "no".
+    return 0;
   }
-  console.error("");
-  // TODO(milestone 7): prompt y/n via /dev/tty here and return non-zero on "no".
+
+  // Heuristics passed. Optional LLM second-pass for a deeper "does this message
+  // actually describe the change?" check. Off by default (latency on every
+  // commit); never blocks the commit on its own failure.
+  if (config.llmVerifyEnabled) {
+    const verdict = await llmVerify(message, config);
+    if (verdict?.weak) {
+      console.error("");
+      console.error(`⚠️  Second-opinion check flagged this message: "${firstLine(message)}"`);
+      if (verdict.reason) console.error(`   - ${verdict.reason}`);
+      console.error("");
+    }
+  }
+
   return 0;
 }

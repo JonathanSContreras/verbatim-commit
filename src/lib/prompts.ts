@@ -58,3 +58,29 @@ export function buildGenPrompt(ctx: GenPromptContext): {
 
   return { system, prompt: parts.join("\n") };
 }
+
+/** Build the system + user prompt for the LLM verify second-pass. */
+export function buildVerifyPrompt(
+  message: string,
+  diff: string,
+): { system: string; prompt: string } {
+  const system = [
+    "You judge whether a git commit message accurately and specifically describes the staged code change.",
+    "WEAK = vague, generic, or low-effort (e.g. 'update', 'fix stuff', 'changes'), or it does not reflect what the diff actually does.",
+    "GOOD = it specifically and accurately describes the change.",
+    "Respond with exactly one word on the first line: GOOD or WEAK.",
+    "If WEAK, add a second line with a short reason (max 12 words).",
+  ].join("\n");
+
+  const prompt = [
+    "Commit message:",
+    message.trim(),
+    "",
+    "Staged diff:",
+    diff,
+    "",
+    "Verdict:",
+  ].join("\n");
+
+  return { system, prompt };
+}
