@@ -1,5 +1,6 @@
 import { loadConfig } from "../config.js";
 import {
+  commit,
   getCurrentBranch,
   getRecentCommitSubjects,
   getStagedDiff,
@@ -9,13 +10,25 @@ import {
 import { budgetDiff, computeDiffBudgetTokens } from "../lib/diff.js";
 import { buildGenPrompt } from "../lib/prompts.js";
 import { OllamaUnavailableError, generate } from "../lib/ollama.js";
+import { Prompter, editInEditor } from "../lib/prompt.js";
+
+/** Print a candidate message, each line indented for readability. */
+function printCandidate(message: string): void {
+  const indented = message
+    .split("\n")
+    .map((line) => "  " + line)
+    .join("\n");
+  console.log("\nGenerated commit message:\n");
+  console.log(indented);
+  console.log("");
+}
 
 /**
  * Generate mode.
  *
- * Milestone 2: read the staged diff, budget it to the model's context window,
- * gather repo-aware context (branch + recent subjects), call Ollama, and print
- * the generated message. The confirm/commit loop is milestone 3.
+ * Milestone 3: after generating a candidate, run a confirm loop —
+ * [y]es commits, [e]dit opens the editor, [r]egenerate asks for another
+ * candidate, [q]uit aborts. Never commits without explicit confirmation.
  *
  * Returns a process exit code.
  */
@@ -59,28 +72,94 @@ export async function gen(): Promise<number> {
     messageFormat: config.messageFormat,
   });
 
-  let message: string;
-  try {
-    message = await generate({
-      host: config.ollamaHost,
-      model: config.model,
-      system,
-      prompt,
-    });
-  } catch (err) {
-    if (err instanceof OllamaUnavailableError) {
-      console.error(err.message);
-      return 1;
+  // Returns a candidate message, or null if generation failed (error printed).
+  const tryGenerate = async (): Promise<string | null> => {
+    try {
+      const message = await generate({
+        host: config.ollamaHost,
+        model: config.model,
+        system,
+        prompt,
+      });
+      if (message === "") {
+        console.error("Model returned an empty message.");
+        return null;
+      }
+      return message;
+    } catch (err) {
+      if (err instanceof OllamaUnavailableError) {
+        console.error(err.message);
+      } else {
+        console.error(`Error generating commit message: ${(err as Error).message}`);
+      }
+      return null;
     }
-    console.error(`Error generating commit message: ${(err as Error).message}`);
-    return 1;
+  };
+
+  let current = await tryGenerate();
+  if (current === null) return 1;
+
+  // Non-interactive (piped) invocation: print and exit without committing.
+  if (!process.stdin.isTTY) {
+    process.stdout.write(current + "\n");
+    return 0;
   }
 
-  if (message === "") {
-    console.error("Model returned an empty message.");
-    return 1;
-  }
+  const prompter = new Prompter();
+  try {
+    for (;;) {
+      printCandidate(current);
+      const answer = (
+        await prompter.question(
+          "Use this message? [y]es / [e]dit / [r]egenerate / [q]uit: ",
+        )
+      ).toLowerCase();
 
-  process.stdout.write(message + "\n");
-  return 0;
+      switch (answer) {
+        case "y":
+        case "yes": {
+          try {
+            await commit(current, cwd);
+          } catch (err) {
+            console.error(`Commit failed: ${(err as Error).message}`);
+            return 1;
+          }
+          console.log("✓ Committed.");
+          return 0;
+        }
+        case "e":
+        case "edit": {
+          try {
+            const edited = await editInEditor(current, prompter);
+            if (edited === "") {
+              console.log("Empty message — keeping the previous one.");
+            } else {
+              current = edited;
+            }
+          } catch (err) {
+            console.error(`Edit cancelled: ${(err as Error).message}`);
+          }
+          break;
+        }
+        case "r":
+        case "regenerate":
+        case "n":
+        case "no": {
+          console.log("Regenerating…");
+          const next = await tryGenerate();
+          if (next !== null) current = next;
+          break;
+        }
+        case "q":
+        case "quit": {
+          console.log("Aborted. Nothing committed.");
+          return 1;
+        }
+        default:
+          console.log("Please answer: y, e, r, or q.");
+      }
+    }
+  } finally {
+    prompter.close();
+  }
 }
