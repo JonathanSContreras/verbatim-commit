@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { writeFile, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -99,6 +99,13 @@ export async function getStagedFileChanges(
     }
   }
   return changes;
+}
+
+/** Absolute path to this repo's git hooks directory. */
+export async function getHooksDir(cwd: string = process.cwd()): Promise<string> {
+  const out = await runGit(["rev-parse", "--git-path", "hooks"], cwd);
+  const p = out.trim();
+  return isAbsolute(p) ? p : join(cwd, p);
 }
 
 /** Current branch name (empty on a detached HEAD or fresh repo). */

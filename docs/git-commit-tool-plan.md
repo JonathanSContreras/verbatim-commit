@@ -181,6 +181,11 @@ Controls:
 
 ---
 
+## Known Issues / Prompt Tuning (for milestone 9 polish)
+- **Model occasionally dumps raw code into the message body.** Observed with `gemma3:4b`: e.g. a generated message whose body was a verbatim line of the diff (`export function retry(fn){...}`). Harmless to heuristics (they judge the subject only) but ugly. Fix via prompt tuning — explicitly instruct the model not to include code/diff lines in the body, and/or post-process to strip body lines that look like code. Revisit during milestone 9.
+
+---
+
 ## Build Order (suggested milestones)
 
 1. **CLI skeleton** — basic `yourtool gen` command that reads staged diff and prints it (no LLM yet). Confirms git plumbing works.

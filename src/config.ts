@@ -15,6 +15,10 @@ export interface Config {
   minWordCount: number;
   /** User-editable low-effort phrases that flag a message. */
   blocklist: string[];
+  /** Master switch for the commit-msg hook (verify mode). */
+  hookEnabled: boolean;
+  /** Whether verify mode adds an optional LLM second-pass (milestone 6). */
+  llmVerifyEnabled: boolean;
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -45,6 +49,8 @@ export const DEFAULT_CONFIG: Config = {
     "tmp",
     "temp",
   ],
+  hookEnabled: true,
+  llmVerifyEnabled: false,
 };
 
 /**
