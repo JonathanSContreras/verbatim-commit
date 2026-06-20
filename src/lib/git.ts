@@ -1,4 +1,7 @@
 import { execFile } from "node:child_process";
+import { writeFile, unlink } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -35,6 +38,21 @@ export async function isGitRepo(cwd: string = process.cwd()): Promise<boolean> {
  */
 export async function getStagedDiff(cwd: string = process.cwd()): Promise<string> {
   return runGit(["diff", "--cached"], cwd);
+}
+
+/**
+ * Commit the staged changes with `message`. Writes the message to a temp file
+ * and uses `git commit -F` so multi-line messages and special characters are
+ * preserved exactly, cross-platform.
+ */
+export async function commit(message: string, cwd: string = process.cwd()): Promise<void> {
+  const file = join(tmpdir(), `aicommit-msg-${process.pid}-${Date.now()}.txt`);
+  await writeFile(file, message, "utf8");
+  try {
+    await runGit(["commit", "-F", file], cwd);
+  } finally {
+    await unlink(file).catch(() => {});
+  }
 }
 
 export interface FileChange {
