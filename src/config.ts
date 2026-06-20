@@ -11,6 +11,10 @@ export interface Config {
   diffBudgetFraction: number;
   /** Commit subject style the gen prompt asks for. */
   messageFormat: MessageFormat;
+  /** Subjects with fewer words than this are flagged as too short. */
+  minWordCount: number;
+  /** User-editable low-effort phrases that flag a message. */
+  blocklist: string[];
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -19,6 +23,28 @@ export const DEFAULT_CONFIG: Config = {
   contextWindow: { "gemma3:4b": 128000 },
   diffBudgetFraction: 0.5,
   messageFormat: "plain",
+  // 3 (not the plan's 4–5) so legitimate imperative subjects like
+  // "add login route" aren't flagged; only 1–2 word subjects trip it.
+  minWordCount: 3,
+  blocklist: [
+    "wip",
+    "fix",
+    "fixes",
+    "quick fix",
+    "update",
+    "updates",
+    "changes",
+    "change",
+    "stuff",
+    "misc",
+    "minor changes",
+    "cleanup",
+    "tweaks",
+    "asdf",
+    "test",
+    "tmp",
+    "temp",
+  ],
 };
 
 /**
