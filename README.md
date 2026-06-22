@@ -26,6 +26,7 @@ For private or proprietary codebases where sending diffs to a hosted LLM is a no
 
 ## Requirements
 
+- **Git**
 - **Node.js ≥ 18**
 - **[Ollama](https://ollama.com)** running locally, with a model pulled:
   ```sh
@@ -36,7 +37,7 @@ For private or proprietary codebases where sending diffs to a hosted LLM is a no
 ## Install
 
 ```sh
-git clone <this-repo> && cd ai-commit-tool
+git clone https://github.com/JonathanSContreras/ai-commit-tool.git && cd ai-commit-tool
 ./scripts/install.sh        # npm install + build + npm link
 ```
 
@@ -182,6 +183,11 @@ npm test           # build + run the test suite
 
 Built with AI assistance (Claude). Design decisions, testing, and direction are my own.
 
+## Limitations
+
+- **Message quality scales with the model.** Output is only as good as the local model you run — `gemma3:4b` is a solid default, but smaller models give rougher messages. Step up to a larger model for richer output (see [Choosing a model](#choosing-a-model)).
+- **Windows is supported by design but not yet tested** on real hardware — development and testing have been on macOS.
+
 ## Not in v1
 
 - Parsing `CONTRIBUTING.md` for commit conventions
@@ -190,3 +196,7 @@ Built with AI assistance (Claude). Design decisions, testing, and direction are 
 - Logging flagged-but-overridden commits
 
 See `docs/git-commit-tool-plan.md` for the full design.
+
+## Feedback
+
+This is a personal project and feedback is very welcome — especially on the prompts and the heuristic rules. Open an [issue](https://github.com/JonathanSContreras/ai-commit-tool/issues) or start a discussion.
