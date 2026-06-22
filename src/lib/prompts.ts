@@ -18,7 +18,7 @@ export function buildGenPrompt(ctx: GenPromptContext): {
 } {
   const formatInstruction =
     ctx.messageFormat === "conventional"
-      ? 'Use Conventional Commits: a type prefix (feat, fix, docs, refactor, test, chore, etc.), optional scope, then a concise description. Example: "fix(auth): handle missing token".'
+      ? 'Use Conventional Commits, format "type(optional-scope): description". The type MUST be exactly one of: feat, fix, docs, style, refactor, perf, test, chore, build, ci. Never invent a type (e.g. not "rename:" or "update:"); for renames, moves, or file reorganization use "refactor" or "chore". Example: "fix(auth): handle missing token".'
       : "Write a plain, descriptive subject line in the imperative mood, with no type prefix.";
 
   const system = [
@@ -26,7 +26,9 @@ export function buildGenPrompt(ctx: GenPromptContext): {
     "Output ONLY the commit message — no preamble, no surrounding quotes, no markdown, no explanation.",
     "First line: a concise subject (aim for <= 72 characters). If the change warrants it, add a blank line then a short body explaining the why.",
     "Never put code, diff lines, or verbatim file contents in the message. Describe the change in prose.",
-    "A complete list of changed files is provided. Some files (binary, lockfiles, or very large) are listed there without their content shown — still account for them, including deletions and renames.",
+    "A complete list of changed files is provided. Some files (binary, lockfiles, or very large) are listed there without their content shown — still account for them.",
+    "Use each file's change type exactly: 'renamed' means renamed/moved (NOT updated or added), 'deleted' means removed, 'added' means new, 'modified' means edited. Never describe a rename or deletion as an 'update'.",
+    "Describe only what the diff and file list actually show. Do not invent reasons, benefits, or changes — e.g. do not claim something was done 'for readability', 'to improve performance', or that content was 'updated' unless the diff clearly shows it.",
     formatInstruction,
   ].join("\n");
 
