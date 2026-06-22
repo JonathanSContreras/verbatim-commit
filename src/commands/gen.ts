@@ -11,8 +11,9 @@ import { budgetDiff, computeDiffBudgetTokens } from "../lib/diff.js";
 import { buildGenPrompt } from "../lib/prompts.js";
 import { checkMessage } from "../lib/heuristics.js";
 import { cleanCommitMessage } from "../lib/message.js";
-import { OllamaUnavailableError, generate } from "../lib/ollama.js";
+import { OllamaTimeoutError, OllamaUnavailableError, generate } from "../lib/ollama.js";
 import { Prompter, editInEditor } from "../lib/prompt.js";
+import { startSpinner } from "../lib/spinner.js";
 
 /** Print a candidate message, with a soft warning if heuristics flag it. */
 function printCandidate(message: string, warnings: string[]): void {
@@ -63,6 +64,12 @@ export async function gen(): Promise<number> {
     return 1;
   }
 
+  if (budgeted.trimmed) {
+    console.log(
+      "⚠️  Large diff — some content was trimmed to fit the model's context; the message may miss details.",
+    );
+  }
+
   const [branch, recentSubjects, fileChanges] = await Promise.all([
     getCurrentBranch(cwd),
     getRecentCommitSubjects(5, cwd),
@@ -92,42 +99,61 @@ export async function gen(): Promise<number> {
     const options = regenerate
       ? { temperature: 1.1, seed: Math.floor(Math.random() * 1_000_000_000) }
       : undefined;
+    const stop = startSpinner(regenerate ? "Regenerating…" : "Generating commit message…");
+    let message: string;
     try {
-      const message = await generate({
+      message = await generate({
         host: config.ollamaHost,
         model: config.model,
         system,
         prompt,
         options,
       });
-      const cleaned = cleanCommitMessage(message);
-      if (cleaned === "") {
-        console.error("Model returned an empty message.");
-        return null;
-      }
-      return cleaned;
     } catch (err) {
-      if (err instanceof OllamaUnavailableError) {
+      stop();
+      if (err instanceof OllamaUnavailableError || err instanceof OllamaTimeoutError) {
         console.error(err.message);
       } else {
         console.error(`Error generating commit message: ${(err as Error).message}`);
       }
       return null;
     }
+    stop();
+
+    const cleaned = cleanCommitMessage(message);
+    if (cleaned === "") {
+      console.error("Model returned an empty message.");
+      return null;
+    }
+    return cleaned;
   };
 
-  let current = await tryGenerate(false);
-  if (current === null) return 1;
-
-  // Non-interactive (piped) invocation: print and exit without committing.
+  // Non-interactive (piped) invocation: generate once, print, no commit/retry.
   if (!process.stdin.isTTY) {
-    process.stdout.write(current + "\n");
+    const message = await tryGenerate(false);
+    if (message === null) return 1;
+    process.stdout.write(message + "\n");
     return 0;
   }
 
   const prompter = new Prompter();
   try {
+    let current = await tryGenerate(false);
+
     for (;;) {
+      // Generation failed — offer a retry instead of hard-exiting.
+      if (current === null) {
+        const ans = (
+          await prompter.question("Generation failed. [r]etry / [q]uit: ")
+        ).toLowerCase();
+        if (ans === "q" || ans === "quit") {
+          console.log("Aborted. Nothing committed.");
+          return 1;
+        }
+        current = await tryGenerate(false);
+        continue;
+      }
+
       const { reasons } = checkMessage(
         current,
         { minWordCount: config.minWordCount, blocklist: config.blocklist },
