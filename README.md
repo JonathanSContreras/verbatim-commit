@@ -85,14 +85,14 @@ Use this message? [y]es / [e]dit / [r]egenerate / [q]uit:
 - **r** — generate a different candidate
 - **q** — abort without committing
 
-It never commits without your confirmation. If the candidate looks weak, you'll see a `⚠️ Looks weak: …` note alongside the prompt.
+It never commits without your confirmation. If the candidate looks weak, you'll see a `! Looks weak: …` note alongside the prompt.
 
 ### Verify mode (the hook)
 
 Once `verbatim install-hook` is run, every `git commit` in that repo is checked. Good messages pass silently. A weak one prompts:
 
 ```
-⚠️  This commit message looks weak: "wip"
+! This commit message looks weak: "wip"
    - matches low-effort phrase: "wip"
    - subject is only 1 word (minimum 3)
 

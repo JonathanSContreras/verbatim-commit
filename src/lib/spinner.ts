@@ -5,7 +5,7 @@
  *
  * Returns a stop function that clears the spinner line and restores the cursor.
  */
-const FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+const FRAMES = ["|", "/", "-", "\\"];
 
 export function startSpinner(text: string): () => void {
   const stream = process.stderr;

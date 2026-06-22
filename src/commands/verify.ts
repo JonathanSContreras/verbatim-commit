@@ -22,7 +22,7 @@ function firstLine(message: string): string {
  */
 function handleFlagged(subject: string, reasons: string[]): number {
   console.error("");
-  console.error(`⚠️  This commit message looks weak: "${subject}"`);
+  console.error(`! This commit message looks weak: "${subject}"`);
   for (const reason of reasons) {
     console.error(`   - ${reason}`);
   }

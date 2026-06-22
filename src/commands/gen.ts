@@ -24,7 +24,7 @@ function printCandidate(message: string, warnings: string[]): void {
   console.log("\nGenerated commit message:\n");
   console.log(indented);
   if (warnings.length > 0) {
-    console.log(`\n⚠️  Looks weak: ${warnings[0]}`);
+    console.log(`\n! Looks weak: ${warnings[0]}`);
   }
   console.log("");
 }
@@ -66,7 +66,7 @@ export async function gen(): Promise<number> {
 
   if (budgeted.trimmed) {
     console.log(
-      "⚠️  Large diff — some content was trimmed to fit the model's context; the message may miss details.",
+      "! Large diff — some content was trimmed to fit the model's context; the message may miss details.",
     );
   }
 
@@ -175,7 +175,7 @@ export async function gen(): Promise<number> {
             console.error(`Commit failed: ${(err as Error).message}`);
             return 1;
           }
-          console.log("✓ Committed.");
+          console.log("Committed.");
           return 0;
         }
         case "e":

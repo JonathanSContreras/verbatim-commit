@@ -46,7 +46,7 @@ export async function installHook(opts: { force?: boolean }): Promise<number> {
 
   await writeFile(hookPath, script, { encoding: "utf8" });
   await chmod(hookPath, 0o755);
-  console.log(`✓ Installed commit-msg hook at ${hookPath}`);
+  console.log(`Installed commit-msg hook at ${hookPath}`);
   return 0;
 }
 
@@ -71,6 +71,6 @@ export async function uninstallHook(): Promise<number> {
   }
 
   await unlink(hookPath);
-  console.log(`✓ Removed commit-msg hook at ${hookPath}`);
+  console.log(`Removed commit-msg hook at ${hookPath}`);
   return 0;
 }
