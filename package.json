@@ -1,11 +1,11 @@
 {
-  "name": "ai-commit-tool",
+  "name": "verbatim-commit",
   "version": "0.1.0",
   "description": "Local-first AI commit message generator + low-effort commit verifier",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "aicommit": "./dist/cli.js"
+    "verbatim": "./dist/cli.js"
   },
   "files": [
     "dist",

@@ -11,17 +11,17 @@ function tempDir(prefix) {
 
 test("precedence: defaults < global < repo", () => {
   const home = tempDir("aic-home-");
-  mkdirSync(join(home, ".aicommit"), { recursive: true });
+  mkdirSync(join(home, ".verbatim"), { recursive: true });
   writeFileSync(
-    join(home, ".aicommit", "config.json"),
+    join(home, ".verbatim", "config.json"),
     JSON.stringify({ model: "global-model", messageFormat: "conventional", minWordCount: 5 }),
   );
-  process.env.AICOMMIT_HOME = join(home, ".aicommit");
+  process.env.VERBATIM_HOME = join(home, ".verbatim");
 
   const repo = tempDir("aic-repo-");
   mkdirSync(join(repo, ".git"), { recursive: true });
   writeFileSync(
-    join(repo, ".aicommitrc"),
+    join(repo, ".verbatimrc"),
     JSON.stringify({ messageFormat: "plain", minWordCount: 2, contextWindow: { "custom:7b": 5000 } }),
   );
 
@@ -33,41 +33,41 @@ test("precedence: defaults < global < repo", () => {
   assert.equal(cfg.contextWindow["custom:7b"], 5000); // repo-added model
   assert.equal(cfg.contextWindow["gemma3:4b"], 128000); // default model merged in
 
-  delete process.env.AICOMMIT_HOME;
+  delete process.env.VERBATIM_HOME;
 });
 
 test("per-repo config found from a subdirectory", () => {
-  process.env.AICOMMIT_HOME = tempDir("aic-empty-"); // no global config
+  process.env.VERBATIM_HOME = tempDir("aic-empty-"); // no global config
   const repo = tempDir("aic-repo-");
   mkdirSync(join(repo, ".git"), { recursive: true });
-  writeFileSync(join(repo, ".aicommitrc"), JSON.stringify({ minWordCount: 7 }));
+  writeFileSync(join(repo, ".verbatimrc"), JSON.stringify({ minWordCount: 7 }));
   const sub = join(repo, "src", "deep");
   mkdirSync(sub, { recursive: true });
 
   const cfg = loadConfig(sub);
   assert.equal(cfg.minWordCount, 7);
 
-  delete process.env.AICOMMIT_HOME;
+  delete process.env.VERBATIM_HOME;
 });
 
 test("invalid JSON is ignored, defaults retained", () => {
-  process.env.AICOMMIT_HOME = tempDir("aic-empty-");
+  process.env.VERBATIM_HOME = tempDir("aic-empty-");
   const repo = tempDir("aic-repo-");
   mkdirSync(join(repo, ".git"), { recursive: true });
-  writeFileSync(join(repo, ".aicommitrc"), "{ not valid json ");
+  writeFileSync(join(repo, ".verbatimrc"), "{ not valid json ");
 
   const cfg = loadConfig(repo);
   assert.equal(cfg.minWordCount, 3); // default
 
-  delete process.env.AICOMMIT_HOME;
+  delete process.env.VERBATIM_HOME;
 });
 
 test("malformed values are sanitized to defaults", () => {
-  process.env.AICOMMIT_HOME = tempDir("aic-empty-");
+  process.env.VERBATIM_HOME = tempDir("aic-empty-");
   const repo = tempDir("aic-repo-");
   mkdirSync(join(repo, ".git"), { recursive: true });
   writeFileSync(
-    join(repo, ".aicommitrc"),
+    join(repo, ".verbatimrc"),
     JSON.stringify({ messageFormat: "bogus", diffBudgetFraction: 9, minWordCount: -1 }),
   );
 
@@ -76,5 +76,5 @@ test("malformed values are sanitized to defaults", () => {
   assert.equal(cfg.diffBudgetFraction, 0.5);
   assert.equal(cfg.minWordCount, 3);
 
-  delete process.env.AICOMMIT_HOME;
+  delete process.env.VERBATIM_HOME;
 });

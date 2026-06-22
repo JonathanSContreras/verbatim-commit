@@ -46,7 +46,7 @@ export async function getStagedDiff(cwd: string = process.cwd()): Promise<string
  * preserved exactly, cross-platform.
  */
 export async function commit(message: string, cwd: string = process.cwd()): Promise<void> {
-  const file = join(tmpdir(), `aicommit-msg-${process.pid}-${Date.now()}.txt`);
+  const file = join(tmpdir(), `verbatim-msg-${process.pid}-${Date.now()}.txt`);
   await writeFile(file, message, "utf8");
   try {
     await runGit(["commit", "-F", file], cwd);

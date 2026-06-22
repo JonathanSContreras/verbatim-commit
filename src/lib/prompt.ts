@@ -71,7 +71,7 @@ export async function editInEditor(
   initial: string,
   prompter?: Prompter,
 ): Promise<string> {
-  const file = join(tmpdir(), `aicommit-edit-${process.pid}-${Date.now()}.txt`);
+  const file = join(tmpdir(), `verbatim-edit-${process.pid}-${Date.now()}.txt`);
   await writeFile(file, initial, "utf8");
   prompter?.pause();
   try {

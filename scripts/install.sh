@@ -1,6 +1,6 @@
 #!/bin/sh
-# Build aicommit and link it onto your PATH.
-# After this, run `aicommit install-hook` inside any repo to enable verify mode.
+# Build verbatim and link it onto your PATH.
+# After this, run `verbatim install-hook` inside any repo to enable verify mode.
 set -e
 
 cd "$(dirname "$0")/.."
@@ -11,10 +11,10 @@ npm install
 echo "Building…"
 npm run build
 
-echo "Linking 'aicommit' onto your PATH…"
+echo "Linking 'verbatim' onto your PATH…"
 npm link
 
 echo ""
-echo "✓ Done. Try:  aicommit --help"
-echo "  In a repo:  aicommit gen           # generate a commit message"
-echo "              aicommit install-hook  # enable the commit-msg check"
+echo "✓ Done. Try:  verbatim --help"
+echo "  In a repo:  verbatim gen           # generate a commit message"
+echo "              verbatim install-hook  # enable the commit-msg check"

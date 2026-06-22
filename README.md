@@ -1,10 +1,10 @@
-# aicommit
+# Verbatim Commit
 
-> **Note:** `aicommit` is a working placeholder name. It appears in the binary name, the config dir (`~/.aicommit`), the per-repo file (`.aicommitrc`), and the `AICOMMIT_HOME` env var. Renaming later is a find-and-replace across those.
+> *An honest commit of your changes.*
 
 A local-first CLI for commit messages, with two modes:
 
-1. **Generate** (`aicommit gen`) — reads your staged diff, generates a commit message with a local LLM (Gemma via [Ollama](https://ollama.com)), and commits on confirmation.
+1. **Generate** (`verbatim gen`) — reads your staged diff, generates a commit message with a local LLM (Gemma via [Ollama](https://ollama.com)), and commits on confirmation.
 2. **Verify** (a `commit-msg` git hook) — checks any commit message (typed or generated) for low-effort phrasing and prompts before letting it land.
 
 **Local-first and private by default.** Your code, diffs, and commit messages never leave your machine — everything runs against a local Ollama model. No cloud API, no account, no telemetry. Unlike most AI commit tools, your private codebase is never sent to a third-party service.
@@ -37,14 +37,14 @@ For private or proprietary codebases where sending diffs to a hosted LLM is a no
 ## Install
 
 ```sh
-git clone https://github.com/JonathanSContreras/ai-commit-tool.git && cd ai-commit-tool
+git clone https://github.com/JonathanSContreras/verbatim-commit.git && cd verbatim-commit
 ./scripts/install.sh        # npm install + build + npm link
 ```
 
-This puts `aicommit` on your `PATH`. Then, in any repo where you want the commit-msg check:
+This puts `verbatim` on your `PATH`. Then, in any repo where you want the commit-msg check:
 
 ```sh
-aicommit install-hook
+verbatim install-hook
 ```
 
 <details>
@@ -63,7 +63,7 @@ npm link
 
 ```sh
 git add .
-aicommit gen
+verbatim gen
 ```
 
 You'll see a candidate message and a prompt:
@@ -85,7 +85,7 @@ It never commits without your confirmation. If the candidate looks weak, you'll 
 
 ### Verify mode (the hook)
 
-Once `aicommit install-hook` is run, every `git commit` in that repo is checked. Good messages pass silently. A weak one prompts:
+Once `verbatim install-hook` is run, every `git commit` in that repo is checked. Good messages pass silently. A weak one prompts:
 
 ```
 ⚠️  This commit message looks weak: "wip"
@@ -105,10 +105,10 @@ This is a soft nudge, not a hard gate.
 
 | Command | What it does |
 | --- | --- |
-| `aicommit gen` | Generate a commit message from staged changes and commit on confirmation |
-| `aicommit verify <file>` | Check a message file (used by the hook; you won't normally call this) |
-| `aicommit install-hook [--force]` | Install the `commit-msg` hook in the current repo (`--force` to overwrite a foreign hook) |
-| `aicommit uninstall-hook` | Remove the hook (only if it's ours) |
+| `verbatim gen` | Generate a commit message from staged changes and commit on confirmation |
+| `verbatim verify <file>` | Check a message file (used by the hook; you won't normally call this) |
+| `verbatim install-hook [--force]` | Install the `commit-msg` hook in the current repo (`--force` to overwrite a foreign hook) |
+| `verbatim uninstall-hook` | Remove the hook (only if it's ours) |
 
 ## How it works
 
@@ -122,8 +122,8 @@ This is a soft nudge, not a hard gate.
 Config is merged from three sources, each overriding the last:
 
 1. Built-in defaults
-2. **Global:** `~/.aicommit/config.json` (override the dir with `AICOMMIT_HOME`)
-3. **Per-repo:** `.aicommitrc` at the repo root (found by walking up from the current directory)
+2. **Global:** `~/.verbatim/config.json` (override the dir with `VERBATIM_HOME`)
+3. **Per-repo:** `.verbatimrc` at the repo root (found by walking up from the current directory)
 
 Per-repo wins — e.g. relaxed side projects, conventional/strict work repos. Nested objects (like `contextWindow`) are merged; arrays (like `blocklist`) are replaced.
 
@@ -139,7 +139,7 @@ Per-repo wins — e.g. relaxed side projects, conventional/strict work repos. Ne
 | `hookEnabled` | `true` | Master switch for the commit-msg hook |
 | `llmVerifyEnabled` | `false` | Enable the LLM second-pass in verify mode |
 
-Example `.aicommitrc` for a work repo:
+Example `.verbatimrc` for a work repo:
 
 ```json
 {
@@ -199,4 +199,4 @@ See `docs/git-commit-tool-plan.md` for the full design.
 
 ## Feedback
 
-This is a personal project and feedback is very welcome — especially on the prompts and the heuristic rules. Open an [issue](https://github.com/JonathanSContreras/ai-commit-tool/issues) or start a discussion.
+This is a personal project and feedback is very welcome — especially on the prompts and the heuristic rules. Open an [issue](https://github.com/JonathanSContreras/verbatim-commit/issues) or start a discussion.

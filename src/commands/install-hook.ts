@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { getHooksDir, isGitRepo } from "../lib/git.js";
 
 /** Marker so we can recognize (and safely overwrite) our own hook. */
-const MARKER = "installed by aicommit";
+const MARKER = "installed by verbatim";
 
 /** Absolute path to the compiled CLI entry (dist/cli.js). */
 function cliPath(): string {
@@ -66,7 +66,7 @@ export async function uninstallHook(): Promise<number> {
 
   const existing = await readFile(hookPath, "utf8").catch(() => "");
   if (!existing.includes(MARKER)) {
-    console.error(`The commit-msg hook at ${hookPath} was not installed by aicommit — leaving it alone.`);
+    console.error(`The commit-msg hook at ${hookPath} was not installed by verbatim — leaving it alone.`);
     return 1;
   }
 

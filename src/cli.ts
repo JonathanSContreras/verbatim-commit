@@ -7,8 +7,7 @@ import { installHook, uninstallHook } from "./commands/install-hook.js";
 const program = new Command();
 
 program
-  // TODO: "aicommit" is a placeholder name — see docs/git-commit-tool-plan.md
-  .name("aicommit")
+  .name("verbatim")
   .description(
     "Local-first AI commit message generator + low-effort commit verifier",
   )

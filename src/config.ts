@@ -57,11 +57,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
-const REPO_CONFIG_NAME = ".aicommitrc";
+const REPO_CONFIG_NAME = ".verbatimrc";
 
-/** Global config directory (override with AICOMMIT_HOME). */
+/** Global config directory (override with VERBATIM_HOME). */
 function globalConfigDir(): string {
-  return process.env.AICOMMIT_HOME || join(homedir(), ".aicommit");
+  return process.env.VERBATIM_HOME || join(homedir(), ".verbatim");
 }
 
 function readJsonIfExists(path: string): Partial<Config> | null {
@@ -137,8 +137,8 @@ function sanitize(cfg: Config): Config {
 }
 
 /**
- * Load effective config: defaults < global (`~/.aicommit/config.json`) <
- * per-repo (`.aicommitrc`), deep-merged key by key. See
+ * Load effective config: defaults < global (`~/.verbatim/config.json`) <
+ * per-repo (`.verbatimrc`), deep-merged key by key. See
  * docs/git-commit-tool-plan.md.
  */
 export function loadConfig(cwd: string = process.cwd()): Config {
