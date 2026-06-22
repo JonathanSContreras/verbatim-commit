@@ -173,6 +173,38 @@ The default is **`gemma3:4b`** because it hits the sweet spot for a tool that ru
 
 Step up to a larger model if you want richer messages and can spare the RAM and latency. **When you switch, add a matching `contextWindow` entry** — diff budgeting uses it to size the diff, and falls back to a conservative 8192 tokens for unknown models.
 
+## Troubleshooting
+
+**`verbatim: command not found`**
+The command isn't on your PATH. Run `./scripts/install.sh` (or `npm link`) from the project directory, and make sure your npm global bin is on your PATH.
+
+**`Ollama not reachable at http://localhost:11434`**
+Ollama isn't running. Start it (`ollama serve`, or launch the Ollama app) and retry.
+
+**`Model "gemma3:4b" not found`**
+Pull it: `ollama pull gemma3:4b` — or set a different `model` in your config (see [Choosing a model](#choosing-a-model)).
+
+**`No staged changes`**
+`gen` only looks at staged changes — stage something first with `git add`.
+
+**The hook isn't catching anything.** Check, in order:
+- Is it installed in this repo? Run `verbatim install-hook`.
+- Did you commit with `git commit --no-verify`? That bypasses all hooks.
+- Is `hookEnabled` set to `false` in your config?
+- Did `install-hook` refuse because another `commit-msg` hook already exists? Re-run with `--force` (back up the other hook first).
+
+**The hook never prompts, it just commits.**
+Expected when there's no controlling terminal — GUI git clients, some IDEs, and CI don't get the prompt, so the commit proceeds (the tool never blocks automation). Commit from a terminal if you want the interactive prompt.
+
+**Generated messages are low quality.**
+Quality depends on the model. Press `r` to regenerate, or switch to a larger model (see [Choosing a model](#choosing-a-model)).
+
+**The hook broke after switching Node versions (nvm).**
+`install-hook` bakes the absolute path to your Node at install time. If that Node is gone, just re-run `verbatim install-hook`.
+
+**Config changes aren't taking effect.**
+Invalid JSON is ignored (with a warning). Confirm the file parses, that it's in the right place (`~/.verbatim/config.json` globally or `.verbatimrc` at the repo root), and remember per-repo overrides global.
+
 ## Cross-platform
 
 Works on macOS, Linux, and Windows. The interactive hook prompt reads the terminal directly (`/dev/tty` on POSIX, `CONIN$`/`CONOUT$` on Windows) since git owns stdin during a hook. The hook shim is LF-ended and runs via Git for Windows' bundled bash. (Windows is supported by design; primary testing has been on macOS.)
