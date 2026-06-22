@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadConfig } from "../dist/config.js";
+import { DEFAULT_CONFIG, loadConfig } from "../dist/config.js";
 
 function tempDir(prefix) {
   return mkdtempSync(join(tmpdir(), prefix));
@@ -72,9 +72,9 @@ test("malformed values are sanitized to defaults", () => {
   );
 
   const cfg = loadConfig(repo);
-  assert.equal(cfg.messageFormat, "plain");
-  assert.equal(cfg.diffBudgetFraction, 0.5);
-  assert.equal(cfg.minWordCount, 3);
+  assert.equal(cfg.messageFormat, DEFAULT_CONFIG.messageFormat);
+  assert.equal(cfg.diffBudgetFraction, DEFAULT_CONFIG.diffBudgetFraction);
+  assert.equal(cfg.minWordCount, DEFAULT_CONFIG.minWordCount);
 
   delete process.env.VERBATIM_HOME;
 });
