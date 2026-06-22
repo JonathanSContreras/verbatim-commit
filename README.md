@@ -7,6 +7,10 @@ A local-first CLI for commit messages, with two modes:
 1. **Generate** (`verbatim gen`) — reads your staged diff, generates a commit message with a local LLM (Gemma via [Ollama](https://ollama.com)), and commits on confirmation.
 2. **Verify** (a `commit-msg` git hook) — checks any commit message (typed or generated) for low-effort phrasing and prompts before letting it land.
 
+<p align="center">
+  <img src="docs/demo.gif" alt="Verbatim Commit demo — generating a message, then the hook catching a 'wip' commit" width="720">
+</p>
+
 **Local-first and private by default.** Your code, diffs, and commit messages never leave your machine — everything runs against a local Ollama model. No cloud API, no account, no telemetry. Unlike most AI commit tools, your private codebase is never sent to a third-party service.
 
 ---
