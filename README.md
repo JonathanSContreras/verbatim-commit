@@ -166,6 +166,17 @@ Any model in Ollama works. Message quality scales with model size, so pick your 
 
 **Recommendation:** the default (`qwen2.5-coder:7b`) balances accuracy and footprint well. If you want the best messages and have the headroom, use **`gemma4:12b`** — or **`gemma4:12b-mlx`** on a Mac for the same quality with faster inference. `gemma3:4b` is fine for speed/low-resource setups.
 
+### How the default was chosen
+
+This isn't just about being local and fast — accuracy matters, so the default was earned through testing:
+
+1. **Started with `gemma3:4b`** for its small size and speed.
+2. **Testing on real commits exposed its limits** — on non-trivial diffs it would hallucinate or omit changes (e.g. calling renames "updates," or inventing changes that weren't in the diff).
+3. **Moved to `qwen2.5-coder:7b`** — a clear upgrade that stayed accurate and stopped fabricating, while remaining cross-platform and reasonably light.
+4. **Also tested `gemma4:12b` / `gemma4:12b-mlx`** and found them the most accurate and complete — the recommended step up when you have the headroom.
+
+So `qwen2.5-coder:7b` ships as a deliberately honest default, with a clear path to higher accuracy.
+
 To switch, set `model` (and a matching `contextWindow`) in `~/.verbatim/config.json` or a per-repo `.verbatimrc`:
 
 ```json
