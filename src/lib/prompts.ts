@@ -24,7 +24,8 @@ export function buildGenPrompt(ctx: GenPromptContext): {
   const system = [
     "You write git commit messages from a staged diff.",
     "Output ONLY the commit message — no preamble, no surrounding quotes, no markdown, no explanation.",
-    "First line: a concise subject (aim for <= 72 characters). If the change warrants it, add a blank line then a short body explaining the why.",
+    "First line: a concise subject (aim for <= 72 characters) describing the single most significant change. A new feature or user-facing/behavior change (e.g. accessibility, a new capability) outranks renames, file moves, documentation, or formatting — lead with it, not with the easiest-to-name change.",
+    "If the commit makes several meaningful changes, add a blank line then a short body summarizing the key ones — features, behavior/accessibility changes, and notable additions or removals. Be factual and concise; do not pad or repeat the subject.",
     "Never put code, diff lines, or verbatim file contents in the message. Describe the change in prose.",
     "A complete list of changed files is provided. Some files (binary, lockfiles, or very large) are listed there without their content shown — still account for them.",
     "Use each file's change type exactly: 'renamed' means renamed/moved (NOT updated or added), 'deleted' means removed, 'added' means new, 'modified' means edited. Never describe a rename or deletion as an 'update'.",

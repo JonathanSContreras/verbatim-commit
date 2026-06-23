@@ -22,9 +22,16 @@ export interface Config {
 }
 
 export const DEFAULT_CONFIG: Config = {
-  model: "gemma3:4b",
+  model: "qwen2.5-coder:7b",
   ollamaHost: "http://localhost:11434",
-  contextWindow: { "gemma3:4b": 128000 },
+  // Context windows for the default + recommended models, so switching `model`
+  // works without also editing this. Unknown models fall back to 8192.
+  contextWindow: {
+    "qwen2.5-coder:7b": 32768,
+    "gemma3:4b": 128000,
+    "gemma4:12b": 256000,
+    "gemma4:12b-mlx": 256000,
+  },
   diffBudgetFraction: 0.5,
   messageFormat: "plain",
   // 3 (not the plan's 4–5) so legitimate imperative subjects like
