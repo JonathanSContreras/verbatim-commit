@@ -34,9 +34,9 @@ For private or proprietary codebases where sending diffs to a hosted LLM is a no
 - **Node.js ≥ 18**
 - **[Ollama](https://ollama.com)** running locally, with a model pulled:
   ```sh
-  ollama pull gemma3:4b
+  ollama pull qwen2.5-coder:7b
   ```
-  The model is configurable; `gemma3:4b` is the default.
+  The model is configurable; `qwen2.5-coder:7b` is the default (see [Choosing a model](#choosing-a-model)).
 
 ## Install
 
@@ -133,9 +133,9 @@ Per-repo wins — e.g. relaxed side projects, conventional/strict work repos. Ne
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `model` | `"gemma3:4b"` | Ollama model name |
+| `model` | `"qwen2.5-coder:7b"` | Ollama model name |
 | `ollamaHost` | `"http://localhost:11434"` | Ollama base URL |
-| `contextWindow` | `{ "gemma3:4b": 128000 }` | Per-model context window (tokens) |
+| `contextWindow` | map (defaults cover the recommended models) | Per-model context window (tokens) |
 | `diffBudgetFraction` | `0.5` | Fraction of the context window reserved for diff content |
 | `messageFormat` | `"plain"` | `"plain"` or `"conventional"` (feat:/fix:/…) |
 | `minWordCount` | `3` | Subjects with fewer words are flagged |
@@ -155,23 +155,24 @@ Example `.verbatimrc` for a work repo:
 
 ## Choosing a model
 
-Any model available in Ollama works — set `model` to whatever you prefer (`qwen2.5-coder`, `llama3.1`, a larger Gemma, etc.):
+Any model in Ollama works. Message quality scales with model size, so pick your spot on the accuracy/speed trade:
+
+| Model | Size | Notes |
+| --- | --- | --- |
+| **`qwen2.5-coder:7b`** (default) | ~4.7 GB | Code-tuned, cross-platform. Accurate and honest — never fabricated in testing. The balanced default. |
+| `gemma4:12b` | ~7.6 GB | **Most accurate and complete** output — best if you can spare the RAM (~10 GB) and bandwidth. Cross-platform. |
+| `gemma4:12b-mlx` | ~6.8 GB | Same quality as `gemma4:12b`, Apple-Silicon-optimized (faster on Macs). **macOS only.** |
+| `gemma3:4b` | ~3.3 GB | Lightest and fastest, lowest barrier — but less reliable on complex commits (can under-describe or invent). |
+
+**Recommendation:** the default (`qwen2.5-coder:7b`) balances accuracy and footprint well. If you want the best messages and have the headroom, use **`gemma4:12b`** — or **`gemma4:12b-mlx`** on a Mac for the same quality with faster inference. `gemma3:4b` is fine for speed/low-resource setups.
+
+To switch, set `model` (and a matching `contextWindow`) in `~/.verbatim/config.json` or a per-repo `.verbatimrc`:
 
 ```json
-{
-  "model": "qwen2.5-coder:7b",
-  "contextWindow": { "qwen2.5-coder:7b": 32768 }
-}
+{ "model": "gemma4:12b", "contextWindow": { "gemma4:12b": 256000 } }
 ```
 
-The default is **`gemma3:4b`** because it hits the sweet spot for a tool that runs on every commit:
-
-- **Runs anywhere.** ~3.3 GB and no GPU required — it's comfortable on a typical laptop.
-- **Fast.** Generation takes a few seconds, so it never becomes friction in your commit flow.
-- **Big context.** A 128K-token window comfortably fits large diffs (see [diff budgeting](#how-it-works)).
-- **Good quality for its size.** Summarizing a diff into a one-line subject is well within a small model's reach, so a 4B model gets you most of the value without the cost of a large one.
-
-Step up to a larger model if you want richer messages and can spare the RAM and latency. **When you switch, add a matching `contextWindow` entry** — diff budgeting uses it to size the diff, and falls back to a conservative 8192 tokens for unknown models.
+The defaults already include context windows for the models above, so switching to any of them is a one-line `model` change. For other models, add a `contextWindow` entry so diff budgeting sizes correctly (it falls back to a conservative 8192 tokens otherwise).
 
 ## Troubleshooting
 
@@ -181,8 +182,8 @@ The command isn't on your PATH. Run `./scripts/install.sh` (or `npm link`) from 
 **`Ollama not reachable at http://localhost:11434`**
 Ollama isn't running. Start it (`ollama serve`, or launch the Ollama app) and retry.
 
-**`Model "gemma3:4b" not found`**
-Pull it: `ollama pull gemma3:4b` — or set a different `model` in your config (see [Choosing a model](#choosing-a-model)).
+**`Model "qwen2.5-coder:7b" not found`**
+Pull it: `ollama pull qwen2.5-coder:7b` — or set a different `model` in your config (see [Choosing a model](#choosing-a-model)).
 
 **`No staged changes`**
 `gen` only looks at staged changes — stage something first with `git add`.
@@ -221,7 +222,7 @@ Built with AI assistance (Claude). Design decisions, testing, and direction are 
 
 ## Limitations
 
-- **Message quality scales with the model.** Output is only as good as the local model you run — `gemma3:4b` is a solid default, but smaller models give rougher messages. Step up to a larger model for richer output (see [Choosing a model](#choosing-a-model)).
+- **Message quality scales with the model.** Output is only as good as the local model you run — `qwen2.5-coder:7b` is the balanced default; smaller models like `gemma3:4b` give rougher messages, while `gemma4:12b` is more accurate (see [Choosing a model](#choosing-a-model)).
 - **Windows is supported by design but not yet tested** on real hardware — development and testing have been on macOS.
 
 ## Not in v1
