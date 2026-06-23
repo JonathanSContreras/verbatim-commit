@@ -30,13 +30,14 @@ Type "}" Enter
 Type "EOF" Enter
 Type "git add cart.js" Enter
 Type "echo 'export const TAX_RATE = 0.0825;' > tax.js" Enter
+Type "verbatim gen < /dev/null >/dev/null 2>&1" Enter
 Type "clear" Enter
 Show
 
 # ---------- 1. generate a commit message ----------
 Sleep 1s
 Type "verbatim gen" Enter
-Sleep 11s
+Sleep 6s
 Type "y" Enter
 Sleep 2500ms
 
