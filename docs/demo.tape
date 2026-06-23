@@ -1,5 +1,7 @@
 # Verbatim Commit demo — render with:  vhs docs/demo.tape
 # Produces docs/demo.gif. Requires `verbatim` on PATH (npm link) and Ollama running.
+# Pre-warm the model first so the visible generation finishes within the Sleep:
+#   ollama run "$(node -e 'import("./dist/config.js").then(m=>console.log(m.DEFAULT_CONFIG.model))')" 'hi' >/dev/null 2>&1
 
 Output docs/demo.gif
 
@@ -30,8 +32,8 @@ Type "}" Enter
 Type "EOF" Enter
 Type "git add cart.js" Enter
 Type "echo 'export const TAX_RATE = 0.0825;' > tax.js" Enter
-Type "verbatim gen < /dev/null >/dev/null 2>&1" Enter
 Type "clear" Enter
+Sleep 1s
 Show
 
 # ---------- 1. generate a commit message ----------
