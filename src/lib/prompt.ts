@@ -1,8 +1,12 @@
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { readFile, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as readline from "node:readline/promises";
+import { promisify } from "node:util";
+import { runGit } from "./git.js";
+
+const execFileAsync = promisify(execFile);
 
 /**
  * A single, reusable readline interface for an interactive session.
@@ -40,19 +44,48 @@ export class Prompter {
   }
 }
 
-/** Resolve the user's editor, mirroring git's precedence. */
-function resolveEditor(): string {
-  return (
-    process.env.VISUAL ||
-    process.env.EDITOR ||
-    (process.platform === "win32" ? "notepad" : "vi")
-  );
+/** Is `cmd` on PATH? (POSIX only — used for the non-Windows fallback.) */
+async function commandExists(cmd: string): Promise<boolean> {
+  try {
+    await execFileAsync("which", [cmd]);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Resolve the editor for editing a commit message. Matches git's own
+ * precedence (so it's consistent with `git commit`): GIT_EDITOR, then
+ * core.editor, then $VISUAL/$EDITOR. With nothing configured, fall back to the
+ * beginner-friendly `nano` rather than `vi` (notepad on Windows).
+ */
+async function resolveEditor(cwd: string = process.cwd()): Promise<string> {
+  if (process.env.GIT_EDITOR) return process.env.GIT_EDITOR;
+  try {
+    const coreEditor = (await runGit(["config", "--get", "core.editor"], cwd)).trim();
+    if (coreEditor) return coreEditor;
+  } catch {
+    /* core.editor not set */
+  }
+  if (process.env.VISUAL) return process.env.VISUAL;
+  if (process.env.EDITOR) return process.env.EDITOR;
+  if (process.platform === "win32") return "notepad";
+  if (await commandExists("nano")) return "nano";
+  return "vi";
 }
 
 /** Launch the editor on `file` and resolve when it exits cleanly. */
-function launchEditor(file: string): Promise<void> {
-  const editor = resolveEditor();
+async function launchEditor(file: string): Promise<void> {
+  const editor = await resolveEditor();
   const [cmd, ...args] = editor.split(" ");
+  const base = cmd.split("/").pop() ?? cmd;
+  const tip =
+    base === "vi" || base === "vim"
+      ? "edit, then press Esc and type :wq to save & exit"
+      : "save and exit to continue";
+  process.stderr.write(`Opening ${base} (${tip})…\n`);
+
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, [...args, file], { stdio: "inherit" });
     child.on("error", reject);

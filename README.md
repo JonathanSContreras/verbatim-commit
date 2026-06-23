@@ -81,7 +81,7 @@ Use this message? [y]es / [e]dit / [r]egenerate / [q]uit:
 ```
 
 - **y** — commit it
-- **e** — open the message in your `$EDITOR`, then commit
+- **e** — open the message in your editor, then commit. It uses the same editor as `git commit` (`GIT_EDITOR` → `core.editor` → `$VISUAL`/`$EDITOR`), falling back to `nano` rather than `vi`. Set a different one with e.g. `git config --global core.editor "code --wait"` or `export EDITOR=nano`.
 - **r** — generate a different candidate
 - **q** — abort without committing
 
