@@ -9,7 +9,7 @@ several terminals.** Everything else should "just work," but verify.
 - [ ] **Node.js ≥ 18** installed (`node --version`)
 - [ ] **Git for Windows** installed (provides the bash that runs git hooks)
 - [ ] **Ollama for Windows** installed and running
-- [ ] Model pulled: `ollama pull gemma3:4b`
+- [ ] Model pulled: `ollama pull qwen2.5-coder:7b` (the cross-platform default; `gemma4:12b-mlx` is macOS-only, so use `qwen2.5-coder:7b` or `gemma4:12b` on Windows)
 
 ## Build & link
 - [ ] `npm install`
