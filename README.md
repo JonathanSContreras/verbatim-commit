@@ -4,7 +4,7 @@
 
 A local-first CLI for commit messages, with two modes:
 
-1. **Generate** (`verbatim gen`) — reads your staged diff, generates a commit message with a local LLM (Gemma via [Ollama](https://ollama.com)), and commits on confirmation.
+1. **Generate** (`verbatim gen`) — reads your staged diff, generates a commit message with a local LLM via [Ollama](https://ollama.com), and commits on confirmation.
 2. **Verify** (a `commit-msg` git hook) — checks any commit message (typed or generated) for low-effort phrasing and prompts before letting it land.
 
 <p align="center">
