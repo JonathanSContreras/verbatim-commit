@@ -219,7 +219,7 @@ Invalid JSON is ignored (with a warning). Confirm the file parses, that it's in 
 
 ## Cross-platform
 
-Works on macOS, Linux, and Windows. The interactive hook prompt reads the terminal directly (`/dev/tty` on POSIX, `CONIN$`/`CONOUT$` on Windows) since git owns stdin during a hook. The hook shim is LF-ended and runs via Git for Windows' bundled bash. (Windows is supported by design; primary testing has been on macOS.)
+Works on macOS, Linux, and Windows. The interactive hook prompt reads the terminal directly (`/dev/tty` on POSIX, `CONIN$`/`CONOUT$` on Windows) since git owns stdin during a hook. The hook shim is LF-ended and runs via Git for Windows' bundled bash. All three platforms have been verified on real hardware.
 
 ## Development
 
@@ -234,7 +234,6 @@ Built with AI assistance (Claude). Design decisions, testing, and direction are 
 ## Limitations
 
 - **Message quality scales with the model.** Output is only as good as the local model you run — `qwen2.5-coder:7b` is the balanced default; smaller models like `gemma3:4b` give rougher messages, while `gemma4:12b` is more accurate (see [Choosing a model](#choosing-a-model)).
-- **Windows is supported by design but not yet tested** on real hardware — development and testing have been on macOS.
 
 ## Not in v1
 

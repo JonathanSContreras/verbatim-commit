@@ -5,8 +5,8 @@ import { closeSync, openSync, readSync, writeSync } from "node:fs";
  *
  * During a commit-msg hook, stdin is git's, not the user's terminal — so we
  * read/write the controlling terminal directly: `/dev/tty` on POSIX,
- * `CONIN$`/`CONOUT$` on Windows. (Windows path is untested here; see the
- * cross-platform notes in docs/git-commit-tool-plan.md.)
+ * `CONIN$`/`CONOUT$` on Windows. (Both paths verified on real hardware; see
+ * the cross-platform notes in docs/git-commit-tool-plan.md.)
  *
  * When no controlling terminal is available (CI, GUI git clients, scripts),
  * the prompt returns null so callers can fall through without blocking.

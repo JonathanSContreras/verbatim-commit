@@ -1,5 +1,8 @@
 # Windows testing checklist
 
+**Status: verified working on real Windows hardware (June 2026).** This checklist
+is kept as the repeatable procedure for future regressions.
+
 Manual verification of Verbatim Commit on real Windows hardware. The one genuine
 cross-platform risk is the interactive hook prompt, which reads the console
 directly via `CONIN$`/`CONOUT$` instead of `/dev/tty` — **test that across
@@ -8,7 +11,11 @@ several terminals.** Everything else should "just work," but verify.
 ## Prerequisites
 - [ ] **Node.js ≥ 18** installed (`node --version`)
 - [ ] **Git for Windows** installed (provides the bash that runs git hooks)
-- [ ] **Ollama for Windows** installed and running
+- [ ] **Ollama for Windows** installed **and actively serving** — confirm the
+      server is up (`ollama serve` in a separate terminal, or the tray service
+      running) and reachable at `http://localhost:11434`. `verbatim gen` talks to
+      a running server; it won't start one for you. If it's down you'll get
+      `Ollama not reachable … Try: ollama serve`.
 - [ ] Model pulled: `ollama pull qwen2.5-coder:7b` (the cross-platform default; `gemma4:12b-mlx` is macOS-only, so use `qwen2.5-coder:7b` or `gemma4:12b` on Windows)
 
 ## Build & link
