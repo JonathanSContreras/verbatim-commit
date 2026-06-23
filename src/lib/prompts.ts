@@ -18,14 +18,14 @@ export function buildGenPrompt(ctx: GenPromptContext): {
 } {
   const formatInstruction =
     ctx.messageFormat === "conventional"
-      ? 'Use Conventional Commits, format "type(optional-scope): description". The type MUST be exactly one of: feat, fix, docs, style, refactor, perf, test, chore, build, ci. Never invent a type (e.g. not "rename:" or "update:"); for renames, moves, or file reorganization use "refactor" or "chore". Example: "fix(auth): handle missing token".'
+      ? 'Use Conventional Commits, format "type(optional-scope): description". The type MUST be exactly one of: feat, fix, docs, style, refactor, perf, test, chore, build, ci. Never invent a type (e.g. not "rename:" or "update:"); for renames, moves, or file reorganization use "refactor" or "chore". Example: "fix(auth): handle missing token". The type(scope) prefix applies to the SUBJECT LINE ONLY — it does not replace the body; still include a body when the body rule below calls for one.'
       : "Write a plain, descriptive subject line in the imperative mood, with no type prefix.";
 
   const system = [
     "You write git commit messages from a staged diff.",
     "Output ONLY the commit message — no preamble, no surrounding quotes, no markdown, no explanation.",
     "First line: a concise subject (aim for <= 72 characters) describing the single most significant change. A new feature or user-facing/behavior change (e.g. accessibility, a new capability) outranks renames, file moves, documentation, or formatting — lead with it, not with the easiest-to-name change.",
-    "If the commit makes several meaningful changes, add a blank line then a short body summarizing the key ones — features, behavior/accessibility changes, and notable additions or removals. Be factual and concise; do not pad or repeat the subject.",
+    "Body rule (applies to BOTH plain and conventional formats): for anything beyond a single trivial change — multiple files, or more than one logical change — add a blank line after the subject, then a short body of a few bullet points covering each key change (features, behavior/accessibility changes, renames, and notable additions or removals). Only a genuinely trivial one-line change may be subject-only. Be factual and concise; do not pad or repeat the subject.",
     "Never put code, diff lines, or verbatim file contents in the message. Describe the change in prose.",
     "A complete list of changed files is provided. Some files (binary, lockfiles, or very large) are listed there without their content shown — still account for them.",
     "Use each file's change type exactly: 'renamed' means renamed/moved (NOT updated or added), 'deleted' means removed, 'added' means new, 'modified' means edited. Never describe a rename or deletion as an 'update'.",
