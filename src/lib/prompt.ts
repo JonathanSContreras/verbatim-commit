@@ -9,39 +9,33 @@ import { runGit } from "./git.js";
 const execFileAsync = promisify(execFile);
 
 /**
- * A single, reusable readline interface for an interactive session.
+ * Interactive prompt for the gen confirm loop.
  *
- * Reuse matters: creating and closing a fresh interface per prompt loses
- * buffered stdin between prompts (questions after the first never resolve).
- * Hold one for the whole loop and close it once at the end.
+ * A readline interface is created fresh for each question and closed right
+ * after, so it is NEVER held open across the long generation/editor awaits.
+ * Holding a persistent interface open across those awaits could get it closed
+ * out from under us in some real terminals (ERR_USE_AFTER_CLOSE). Per-question
+ * readline is safe here because this loop is only reached interactively (piped
+ * input takes the print-only path), so there is no pre-buffered stdin to lose.
  */
 export class Prompter {
-  private readonly rl: readline.Interface;
-
-  constructor() {
-    this.rl = readline.createInterface({
+  async question(query: string): Promise<string> {
+    const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
+    try {
+      const answer = await rl.question(query);
+      return answer.trim();
+    } finally {
+      rl.close();
+    }
   }
 
-  async question(query: string): Promise<string> {
-    const answer = await this.rl.question(query);
-    return answer.trim();
-  }
-
-  /** Pause input handling (e.g. while a child process owns the terminal). */
-  pause(): void {
-    this.rl.pause();
-  }
-
-  resume(): void {
-    this.rl.resume();
-  }
-
-  close(): void {
-    this.rl.close();
-  }
+  // No persistent interface to manage; kept for API compatibility.
+  pause(): void {}
+  resume(): void {}
+  close(): void {}
 }
 
 /** Is `cmd` on PATH? (POSIX only — used for the non-Windows fallback.) */
