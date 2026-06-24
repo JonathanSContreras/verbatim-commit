@@ -14,10 +14,30 @@ function cliPath(): string {
 }
 
 /**
+ * A stable absolute path to node, used as the hook's fallback when `node` isn't
+ * on PATH (e.g. GUI git clients launch hooks with a minimal PATH). We prefer a
+ * package-manager symlink that survives version upgrades over process.execPath,
+ * which on Homebrew resolves to a versioned Cellar path (…/node/25.6.1/bin/node)
+ * that breaks on the next `brew upgrade`.
+ */
+function stableNodePath(): string {
+  const candidates = [
+    "/opt/homebrew/bin/node", // Homebrew (Apple Silicon)
+    "/usr/local/bin/node", // Homebrew (Intel) / common install prefix
+    "/usr/bin/node",
+  ];
+  for (const p of candidates) {
+    if (existsSync(p)) return p;
+  }
+  return process.execPath;
+}
+
+/**
  * Install the commit-msg hook into the current repo. Writes an LF-ended POSIX
- * shim that shells out to `verify`. Absolute paths to node and the CLI are
- * baked in at install time so the hook works regardless of PATH (re-run if
- * node or the tool location changes).
+ * shim that shells out to `verify`. The hook prefers `node` on PATH at runtime
+ * (so it survives node upgrades) and falls back to a baked absolute path for
+ * GUI git clients that run hooks with a minimal PATH. Re-run if the tool
+ * location changes.
  */
 export async function installHook(opts: { force?: boolean }): Promise<number> {
   const cwd = process.cwd();
@@ -39,10 +59,17 @@ export async function installHook(opts: { force?: boolean }): Promise<number> {
     }
   }
 
-  const node = process.execPath;
+  const fallback = stableNodePath();
   const cli = cliPath();
   // LF line endings only — Git for Windows runs hooks via its bundled bash.
-  const script = `#!/bin/sh\n# ${MARKER} (commit-msg hook) — safe to remove\n"${node}" "${cli}" verify "$1"\n`;
+  // Prefer node on PATH (survives runtime upgrades); fall back to the baked
+  // absolute path for GUI git clients that run with a minimal PATH.
+  const script =
+    `#!/bin/sh\n` +
+    `# ${MARKER} (commit-msg hook) — safe to remove\n` +
+    `node_bin="$(command -v node || true)"\n` +
+    `[ -x "$node_bin" ] || node_bin="${fallback}"\n` +
+    `"$node_bin" "${cli}" verify "$1"\n`;
 
   await writeFile(hookPath, script, { encoding: "utf8" });
   await chmod(hookPath, 0o755);
