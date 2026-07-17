@@ -54,6 +54,14 @@ function isShouting(subject: string): boolean {
   return letters.length >= 4 && subject === subject.toUpperCase();
 }
 
+/**
+ * True when a subject trails off with an ellipsis (e.g. "Fix the thing...").
+ * A commit subject should state what changed, not leave it hanging.
+ */
+function isUnfinished(subject: string): boolean {
+  return /(\.\.\.|…)$/.test(subject.trim());
+}
+
 /** Individual words drawn from the blocklist phrases. */
 function blocklistWords(blocklist: string[]): Set<string> {
   const words = new Set<string>();
@@ -104,6 +112,10 @@ export function checkMessage(
 
   if (isShouting(subject)) {
     reasons.push("written in all caps (reads as shouting)");
+  }
+
+  if (isUnfinished(subject)) {
+    reasons.push("trails off with an ellipsis (unfinished thought)");
   }
 
   if (previousSubject && normalize(previousSubject) === norm) {

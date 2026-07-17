@@ -23,6 +23,8 @@ const known_bad = [
   "just some changes",
   "FIX THE BUILD",
   "UPDATE DEPENDENCIES",
+  "Refactor the parser...",
+  "still working on this…",
   "",
   "   ",
 ];
