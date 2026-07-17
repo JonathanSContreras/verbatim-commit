@@ -21,6 +21,8 @@ const known_bad = [
   "stuff",
   "misc",
   "just some changes",
+  "FIX THE BUILD",
+  "UPDATE DEPENDENCIES",
   "",
   "   ",
 ];

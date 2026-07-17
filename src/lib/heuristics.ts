@@ -45,6 +45,15 @@ function extractSubject(message: string): string {
   return "";
 }
 
+/**
+ * True when a subject is written entirely in capitals (e.g. "FIX THE BUILD").
+ * Needs at least four letters so short acronyms like "API" don't trip it.
+ */
+function isShouting(subject: string): boolean {
+  const letters = subject.replace(/[^a-z]/gi, "");
+  return letters.length >= 4 && subject === subject.toUpperCase();
+}
+
 /** Individual words drawn from the blocklist phrases. */
 function blocklistWords(blocklist: string[]): Set<string> {
   const words = new Set<string>();
@@ -91,6 +100,10 @@ export function checkMessage(
     reasons.push(
       `subject is only ${words.length} word${words.length === 1 ? "" : "s"} (minimum ${config.minWordCount})`,
     );
+  }
+
+  if (isShouting(subject)) {
+    reasons.push("written in all caps (reads as shouting)");
   }
 
   if (previousSubject && normalize(previousSubject) === norm) {
