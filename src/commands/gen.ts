@@ -29,6 +29,11 @@ function printCandidate(message: string, warnings: string[]): void {
   console.log("");
 }
 
+export interface GenOptions {
+  /** Author's note on why the change was made; see `buildGenPrompt`. */
+  context?: string;
+}
+
 /**
  * Generate mode.
  *
@@ -38,7 +43,7 @@ function printCandidate(message: string, warnings: string[]): void {
  *
  * Returns a process exit code.
  */
-export async function gen(): Promise<number> {
+export async function gen(opts: GenOptions = {}): Promise<number> {
   const cwd = process.cwd();
 
   if (!(await isGitRepo(cwd))) {
@@ -82,6 +87,7 @@ export async function gen(): Promise<number> {
     branch,
     recentSubjects,
     messageFormat: config.messageFormat,
+    intent: opts.context,
   };
 
   // Messages the user has rejected via "regenerate", so we steer away from them.

@@ -16,8 +16,12 @@ program
 program
   .command("gen")
   .description("Generate a commit message from staged changes")
-  .action(async () => {
-    const code = await gen();
+  .option(
+    "-c, --context <text>",
+    "why you made this change — shapes the message, never overrides the diff",
+  )
+  .action(async (opts: { context?: string }) => {
+    const code = await gen(opts);
     process.exit(code);
   });
 

@@ -9,6 +9,11 @@ export interface GenPromptContext {
   messageFormat: MessageFormat;
   /** Previously rejected messages to steer away from on regeneration. */
   avoid?: string[];
+  /**
+   * Author-supplied note on *why* the change was made (`gen --context`).
+   * Shapes framing only; the diff stays the source of truth for *what*.
+   */
+  intent?: string;
 }
 
 /** Build the system + user prompt for generate mode. */
@@ -16,6 +21,8 @@ export function buildGenPrompt(ctx: GenPromptContext): {
   system: string;
   prompt: string;
 } {
+  const intent = ctx.intent?.trim() ?? "";
+
   const formatInstruction =
     ctx.messageFormat === "conventional"
       ? 'Use Conventional Commits, format "type(optional-scope): description". The type MUST be exactly one of: feat, fix, docs, style, refactor, perf, test, chore, build, ci. Never invent a type (e.g. not "rename:" or "update:"); for renames, moves, or file reorganization use "refactor" or "chore". Example: "fix(auth): handle missing token". The type(scope) prefix applies to the SUBJECT LINE ONLY — it does not replace the body; still include a body when the body rule below calls for one.'
@@ -30,6 +37,12 @@ export function buildGenPrompt(ctx: GenPromptContext): {
     "A complete list of changed files is provided. Some files (binary, lockfiles, or very large) are listed there without their content shown — still account for them.",
     "Use each file's change type exactly: 'renamed' means renamed/moved (NOT updated or added), 'deleted' means removed, 'added' means new, 'modified' means edited. Never describe a rename or deletion as an 'update'.",
     "Describe only what the diff and file list actually show. Do not invent reasons, benefits, or changes — e.g. do not claim something was done 'for readability', 'to improve performance', or that content was 'updated' unless the diff clearly shows it.",
+    ...(intent
+      ? [
+          "The author has supplied a note explaining WHY they made this change. Because a note was given, ALWAYS include a body (even for a one-line change), and open the body with one short sentence stating that reason in your own words, without adding to it. It is the only reason or benefit you may give.",
+          "The author's note is NOT a list of changes. It may mention other work, plans, or related fixes that are not part of this commit. Describe only changes you can see in the diff; anything the note mentions that the diff does not show must be left out of the message entirely — do not list it, even briefly.",
+        ]
+      : []),
     formatInstruction,
   ].join("\n");
 
@@ -46,6 +59,13 @@ export function buildGenPrompt(ctx: GenPromptContext): {
     parts.push(
       "Recent commit subjects in this repo (style/tone reference only — do not copy):",
       ...ctx.recentSubjects.map((s) => `- ${s}`),
+    );
+  }
+  if (intent) {
+    parts.push(
+      "",
+      "Author's note on why (context only — it may mention things NOT in this diff; never list those as changes):",
+      intent,
     );
   }
   parts.push("", "Staged diff:", ctx.diff, "");
