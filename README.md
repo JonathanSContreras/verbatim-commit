@@ -87,6 +87,27 @@ Use this message? [y]es / [e]dit / [r]egenerate / [q]uit:
 
 It never commits without your confirmation. If the candidate looks weak, you'll see a `! Looks weak: …` note alongside the prompt.
 
+### Tell it why (optional)
+
+The diff shows *what* changed, never *why*, so on its own the model either leaves the reason out or guesses. If you know the reason, pass it with `-c` / `--context`:
+
+```sh
+verbatim gen -c "users were getting logged out early when their laptop clock ran a few seconds fast"
+```
+
+```
+fix(auth): add clock skew buffer to session expiration check
+
+This prevents premature logouts caused by minor discrepancies in local system clocks.
+
+- Define a CLOCK_SKEW_MS constant of 30 seconds.
+- Update the isExpired function to include this offset during expiration checks.
+```
+
+The note is used for the reason only. The diff still decides what the message says changed, so anything the note mentions that isn't in the diff (other work, plans) is left out rather than listed. Without `-c`, nothing about generation changes.
+
+How well the reason makes it in depends on the model: `gemma4:12b` included it in every test run, while the `qwen2.5-coder:7b` default includes it less consistently (`r` to regenerate helps).
+
 ### Verify mode (the hook)
 
 Once `verbatim install-hook` is run, every `git commit` in that repo is checked. Good messages pass silently. A weak one prompts:
@@ -109,7 +130,7 @@ This is a soft nudge, not a hard gate.
 
 | Command | What it does |
 | --- | --- |
-| `verbatim gen` | Generate a commit message from staged changes and commit on confirmation |
+| `verbatim gen [-c "<why>"]` | Generate a commit message from staged changes and commit on confirmation (`-c` adds your reason for the change) |
 | `verbatim verify <file>` | Check a message file (used by the hook; you won't normally call this) |
 | `verbatim install-hook [--force]` | Install the `commit-msg` hook in the current repo (`--force` to overwrite a foreign hook) |
 | `verbatim uninstall-hook` | Remove the hook (only if it's ours) |
@@ -209,7 +230,7 @@ Pull it: `ollama pull qwen2.5-coder:7b` — or set a different `model` in your c
 Expected when there's no controlling terminal — GUI git clients, some IDEs, and CI don't get the prompt, so the commit proceeds (the tool never blocks automation). Commit from a terminal if you want the interactive prompt.
 
 **Generated messages are low quality.**
-Quality depends on the model. Press `r` to regenerate, or switch to a larger model (see [Choosing a model](#choosing-a-model)).
+Quality depends on the model. Press `r` to regenerate, or switch to a larger model (see [Choosing a model](#choosing-a-model)). If the message is accurate but misses the point of the change, pass the reason with `-c` (see [Tell it why](#tell-it-why-optional)).
 
 **The hook broke after switching Node versions (nvm).**
 `install-hook` bakes the absolute path to your Node at install time. If that Node is gone, just re-run `verbatim install-hook`.
