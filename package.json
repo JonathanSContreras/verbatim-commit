@@ -34,10 +34,10 @@
   ],
   "scripts": {
     "build": "tsc",
-    "postbuild": "chmod +x dist/cli.js",
+    "postbuild": "node -e \"require('fs').chmodSync('dist/cli.js', 0o755)\"",
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
-    "test": "npm run build && node --test test/*.test.js",
+    "test": "npm run build && node --test",
     "prepare": "npm run build"
   },
   "engines": {
