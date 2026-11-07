@@ -3,6 +3,12 @@
 **Status: verified working on real Windows hardware (June 2026).** This checklist
 is kept as the repeatable procedure for future regressions.
 
+**What CI already covers.** Every push runs [CI](../.github/workflows/ci.yml) on
+`windows-latest` (Node 18, 24, 26): `npm ci`, the build, the unit tests, the
+`verbatim` bin shim, and a commit through the installed hook with no terminal
+attached. This checklist is for what CI can't reach: the interactive `CONIN$`
+prompt, real terminals, and generation against a running Ollama.
+
 Manual verification of Verbatim Commit on real Windows hardware. The one genuine
 cross-platform risk is the interactive hook prompt, which reads the console
 directly via `CONIN$`/`CONOUT$` instead of `/dev/tty` — **test that across
@@ -25,7 +31,7 @@ several terminals.** Everything else should "just work," but verify.
 - [ ] `verbatim --version` works from a new terminal (command is on PATH)
 
 ## Unit tests
-- [ ] `npm test` → **45 passing** (these are pure; cross-platform-sensitive bits like path handling run here)
+- [ ] `npm test` → **all passing**, 0 failing (54 tests as of November 2026; these are pure, and cross-platform-sensitive bits like path handling run here)
 
 ## Generate mode (`verbatim gen`)
 Test in **both PowerShell and Git Bash** (and Windows Terminal if available):

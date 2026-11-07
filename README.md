@@ -242,6 +242,8 @@ Invalid JSON is ignored (with a warning). Confirm the file parses, that it's in 
 
 Works on macOS, Linux, and Windows. The interactive hook prompt reads the terminal directly (`/dev/tty` on POSIX, `CONIN$`/`CONOUT$` on Windows) since git owns stdin during a hook. The hook shim is LF-ended and runs via Git for Windows' bundled bash. All three platforms have been verified on real hardware.
 
+[CI](.github/workflows/ci.yml) runs the build, the unit tests, and a non-interactive hook smoke test (install the hook, commit, check the warning fires) on all three platforms against Node 18, 24, and 26. The interactive prompt and Ollama paths need a real terminal and a running model, so those stay on the manual [Windows checklist](docs/windows-testing.md).
+
 ## Development
 
 ```sh
