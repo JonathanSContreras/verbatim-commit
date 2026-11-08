@@ -39,8 +39,12 @@ jobs:
 
       # The parts unit tests can't reach: the `verbatim` bin shim (npm's .cmd
       # wrapper on Windows) and the commit-msg hook, which git runs through
-      # sh. No Ollama is needed: the heuristic pass runs alone, and with no
-      # terminal attached a flagged message prints its warning and proceeds.
+      # sh. No Ollama is needed: the heuristic pass runs alone, and a flagged
+      # message prints its warning and proceeds without prompting.
+      #
+      # It checks two ways the prompt gets skipped: CI set (all platforms),
+      # and CI unset with no terminal to open (Linux/macOS only, since a
+      # Windows runner attaches a console that the hook would wait on).
       - name: Smoke test the CLI and commit-msg hook
         shell: bash
         timeout-minutes: 3
@@ -58,8 +62,17 @@ jobs:
           echo one > a.txt && git add a.txt
           git commit -q -m "Add the first sample file for the hook test"
 
-          echo two > b.txt && git add b.txt
-          git commit -m "wip" < /dev/null 2> hook.err || { cat hook.err; exit 1; }
-          cat hook.err
-          grep -q "looks weak" hook.err
-          test "$(git log -1 --format=%s)" = "wip"
+          # Commit "wip" (with an optional env prefix) and assert the hook
+          # flagged it and the commit still landed.
+          commit_wip() {
+            echo "$1" > "$1.txt" && git add "$1.txt"
+            "${@:2}" git commit -m "wip" < /dev/null 2> hook.err || { cat hook.err; exit 1; }
+            cat hook.err
+            grep -q "looks weak" hook.err
+            test "$(git log -1 --format=%s)" = "wip"
+          }
+
+          commit_wip under-ci env
+          if [ "$RUNNER_OS" != "Windows" ]; then
+            commit_wip no-terminal env -u CI
+          fi
