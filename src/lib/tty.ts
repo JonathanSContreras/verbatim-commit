@@ -19,10 +19,24 @@ function ttyPaths(): { input: string; output: string } {
 }
 
 /**
+ * True when running under CI, per the `CI` variable nearly every CI system
+ * sets. Checked before touching the terminal because "no terminal" isn't
+ * always detectable: a Windows CI runner attaches a console nobody types
+ * into, so `CONIN$` opens fine and the read blocks until the job times out.
+ */
+export function isCI(env: NodeJS.ProcessEnv = process.env): boolean {
+  const value = env.CI?.trim().toLowerCase();
+  return value !== undefined && value !== "" && value !== "0" && value !== "false";
+}
+
+/**
  * Write `question` to the terminal and read one line back (blocking).
- * Returns the trimmed answer, or null if no terminal is available.
+ * Returns the trimmed answer, or null if no terminal is available (or under
+ * CI, where nobody is there to answer).
  */
 export function promptTty(question: string): string | null {
+  if (isCI()) return null;
+
   const { input, output } = ttyPaths();
 
   let outFd: number;
