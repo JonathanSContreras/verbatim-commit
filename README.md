@@ -122,7 +122,7 @@ Commit anyway? (y/N)
 
 - **y** — commit proceeds
 - **n** / **Enter** — commit is aborted; fix the message and try again
-- **No terminal** (CI, GUI git clients, scripts) — no prompt, commit always proceeds
+- **No terminal** (CI, GUI git clients, scripts) — no prompt, commit always proceeds. The prompt is also skipped whenever the `CI` environment variable is set, which nearly every CI system does.
 
 This is a soft nudge, not a hard gate.
 
@@ -227,7 +227,10 @@ Pull it: `ollama pull qwen2.5-coder:7b` — or set a different `model` in your c
 - Did `install-hook` refuse because another `commit-msg` hook already exists? Re-run with `--force` (back up the other hook first).
 
 **The hook never prompts, it just commits.**
-Expected when there's no controlling terminal — GUI git clients, some IDEs, and CI don't get the prompt, so the commit proceeds (the tool never blocks automation). Commit from a terminal if you want the interactive prompt.
+Expected when there's no controlling terminal — GUI git clients, some IDEs, and CI don't get the prompt, so the commit proceeds (the tool never blocks automation). It's also skipped whenever `CI` is set, so check that it isn't exported in your shell. Commit from a terminal if you want the interactive prompt.
+
+**A commit hangs on Windows in a script or scheduled task.**
+On Windows, a background process can have a console that nobody types into, so the hook waits for an answer to `Commit anyway?`. Set `CI=1` for that process (or `hookEnabled: false` in its config), and the hook will warn without prompting.
 
 **Generated messages are low quality.**
 Quality depends on the model. Press `r` to regenerate, or switch to a larger model (see [Choosing a model](#choosing-a-model)). If the message is accurate but misses the point of the change, pass the reason with `-c` (see [Tell it why](#tell-it-why-optional)).
@@ -242,7 +245,7 @@ Invalid JSON is ignored (with a warning). Confirm the file parses, that it's in 
 
 Works on macOS, Linux, and Windows. The interactive hook prompt reads the terminal directly (`/dev/tty` on POSIX, `CONIN$`/`CONOUT$` on Windows) since git owns stdin during a hook. The hook shim is LF-ended and runs via Git for Windows' bundled bash. All three platforms have been verified on real hardware.
 
-[CI](.github/workflows/ci.yml) runs the build, the unit tests, and a non-interactive hook smoke test (install the hook, commit, check the warning fires) on all three platforms against Node 18, 24, and 26. The interactive prompt and Ollama paths need a real terminal and a running model, so those stay on the manual [Windows checklist](docs/windows-testing.md).
+[CI](.github/workflows/ci.yml) runs the build, the unit tests, and a non-interactive hook smoke test (install the hook, commit `wip`, check the warning fires and the commit lands) on all three platforms against Node 18, 24, and 26. The interactive prompt and Ollama paths need a real terminal and a running model, so those stay on the manual [Windows checklist](docs/windows-testing.md).
 
 ## Development
 

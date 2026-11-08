@@ -5,9 +5,12 @@ is kept as the repeatable procedure for future regressions.
 
 **What CI already covers.** Every push runs [CI](../.github/workflows/ci.yml) on
 `windows-latest` (Node 18, 24, 26): `npm ci`, the build, the unit tests, the
-`verbatim` bin shim, and a commit through the installed hook with no terminal
-attached. This checklist is for what CI can't reach: the interactive `CONIN$`
-prompt, real terminals, and generation against a running Ollama.
+`verbatim` bin shim, and a commit through the installed hook with `CI` set
+(which skips the prompt). It can't test the no-terminal fallback on Windows:
+the runner attaches a console nobody types into, so `CONIN$` opens and the
+prompt would wait. This checklist is for what CI can't reach: the interactive
+`CONIN$` prompt, the GUI-client no-terminal path, real terminals, and generation
+against a running Ollama.
 
 Manual verification of Verbatim Commit on real Windows hardware. The one genuine
 cross-platform risk is the interactive hook prompt, which reads the console
