@@ -255,7 +255,7 @@ npm run dev        # watch mode
 npm test           # build + run the test suite
 ```
 
-Built with AI assistance (Claude). Design decisions, testing, and direction are my own.
+Built with Claude (AI), which wrote most of the code, tests, and commit messages. I decided what to build, steered the design, and reviewed and approved what shipped.
 
 ## Limitations
 
