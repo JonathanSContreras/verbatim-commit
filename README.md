@@ -1,5 +1,8 @@
 # Verbatim Commit
 
+[![CI](https://github.com/JonathanSContreras/verbatim-commit/actions/workflows/ci.yml/badge.svg)](https://github.com/JonathanSContreras/verbatim-commit/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 > *An honest commit of your changes.*
 
 A local-first CLI for commit messages, with two modes:
