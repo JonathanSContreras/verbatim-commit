@@ -3,6 +3,13 @@ import { Command } from "commander";
 import { gen } from "./commands/gen.js";
 import { verify } from "./commands/verify.js";
 import { installHook, uninstallHook } from "./commands/install-hook.js";
+import { createRequire } from "node:module";
+
+// Read the version from package.json (one level up from dist/) so it can't
+// drift from what npm publishes. package.json always ships with the package.
+const { version } = createRequire(import.meta.url)("../package.json") as {
+  version: string;
+};
 
 const program = new Command();
 
@@ -11,7 +18,7 @@ program
   .description(
     "Local-first AI commit message generator + low-effort commit verifier",
   )
-  .version("0.1.0");
+  .version(version);
 
 program
   .command("gen")
