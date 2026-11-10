@@ -26,3 +26,19 @@ test("generate turns thinking off so thinking models answer directly", async () 
   assert.equal(seen.body.stream, false);
   assert.equal(out, "fix: a thing");
 });
+
+test("generate leaves num_ctx to Ollama when no context window is given", async () => {
+  const seen = captureRequest();
+  await generate({ host: "h", model: "m", prompt: "p", options: { temperature: 0 } });
+  assert.deepEqual(seen.body.options, { temperature: 0 });
+});
+
+test("generate sizes num_ctx to the prompt and keeps other options", async () => {
+  const seen = captureRequest();
+  await generate({ host: "h", model: "m", system: "s", prompt: "p", contextWindow: 32768, options: { seed: 7 } });
+  assert.deepEqual(seen.body.options, { seed: 7, num_ctx: 8192 });
+
+  // ~20k estimated tokens needs 26k with headroom, so the next size up.
+  await generate({ host: "h", model: "m", prompt: "x".repeat(80_000), contextWindow: 131072 });
+  assert.equal(seen.body.options.num_ctx, 32768);
+});

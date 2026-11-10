@@ -35,6 +35,7 @@ export async function llmVerify(
       system,
       prompt,
       options: { temperature: 0 },
+      contextWindow,
     });
 
     const lines = out

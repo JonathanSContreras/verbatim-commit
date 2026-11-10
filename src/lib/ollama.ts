@@ -1,3 +1,5 @@
+import { contextSizeFor, estimateTokens } from "./diff.js";
+
 /** Thrown when the Ollama server can't be reached at all. */
 export class OllamaUnavailableError extends Error {
   constructor(host: string) {
@@ -29,6 +31,8 @@ export interface GenerateOptions {
   /** Sampling seed; randomize to get different output for the same prompt. */
   seed?: number;
   top_p?: number;
+  /** Context size (tokens) for this request. */
+  num_ctx?: number;
 }
 
 export interface GenerateParams {
@@ -37,6 +41,12 @@ export interface GenerateParams {
   prompt: string;
   system?: string;
   options?: GenerateOptions;
+  /**
+   * The model's context window (tokens). When given, the request asks for
+   * just enough context to fit the prompt (see `contextSizeFor`) instead of
+   * leaving it to Ollama's default, which can be as small as 4096.
+   */
+  contextWindow?: number;
   /** Abort the request after this many ms (default 120000). */
   timeoutMs?: number;
 }
@@ -66,7 +76,16 @@ export async function generate(params: GenerateParams): Promise<string> {
         // silently before answering: 10–40x slower, often past the timeout,
         // and no better at commit messages. Models without thinking ignore it.
         think: false,
-        options: params.options,
+        options:
+          params.contextWindow === undefined
+            ? params.options
+            : {
+                ...params.options,
+                num_ctx: contextSizeFor(
+                  estimateTokens((params.system ?? "") + params.prompt),
+                  params.contextWindow,
+                ),
+              },
       }),
       signal: controller.signal,
     });

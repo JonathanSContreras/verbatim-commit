@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   budgetDiff,
   computeDiffBudgetTokens,
+  contextSizeFor,
   estimateTokens,
   isNoisePath,
   splitDiffByFile,
@@ -28,6 +29,23 @@ test("estimateTokens rounds up at ~4 chars/token", () => {
   assert.equal(estimateTokens(""), 0);
   assert.equal(estimateTokens("abcd"), 1);
   assert.equal(estimateTokens("abcde"), 2);
+});
+
+// ---------- contextSizeFor ----------
+test("small prompts get the 8192 minimum", () => {
+  assert.equal(contextSizeFor(0, 32768), 8192);
+  assert.equal(contextSizeFor(5000, 32768), 8192); // 6250 + 1024 fits
+});
+
+test("larger prompts step up in doubles, with 25% headroom", () => {
+  assert.equal(contextSizeFor(6000, 32768), 16384); // 7500 + 1024 > 8192
+  assert.equal(contextSizeFor(12000, 131072), 16384);
+  assert.equal(contextSizeFor(13000, 131072), 32768); // 16250 + 1024 > 16384
+});
+
+test("never asks for more than the model's context window", () => {
+  assert.equal(contextSizeFor(100000, 32768), 32768);
+  assert.equal(contextSizeFor(100, 4096), 4096); // window smaller than the minimum
 });
 
 // ---------- computeDiffBudgetTokens ----------

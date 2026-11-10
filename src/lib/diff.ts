@@ -36,6 +36,28 @@ export function computeDiffBudgetTokens(
   return Math.max(256, Math.floor(contextWindow * fraction) - RESERVE_TOKENS);
 }
 
+/** Tokens left free in the context for the model's reply. */
+export const RESPONSE_TOKENS = 1024;
+
+/** Smallest context we request; most commits fit, so the model stays loaded. */
+export const MIN_CONTEXT_TOKENS = 8192;
+
+/**
+ * Context size to request from Ollama (`num_ctx`) for a prompt of this many
+ * estimated tokens. Without it Ollama picks its own default, which is only
+ * 4096 tokens on machines with under 24 GB of GPU memory, and silently drops
+ * whatever doesn't fit. Steps in doubles from 8192 so typical commits share
+ * one size (changing it makes Ollama reload the model), with 25% headroom
+ * because the 4-chars-per-token estimate runs low on code. Never exceeds the
+ * model's context window.
+ */
+export function contextSizeFor(promptTokens: number, contextWindow: number): number {
+  const needed = Math.ceil(promptTokens * 1.25) + RESPONSE_TOKENS;
+  let size = MIN_CONTEXT_TOKENS;
+  while (size < needed && size < contextWindow) size *= 2;
+  return Math.min(size, contextWindow);
+}
+
 /** Split a unified diff into one chunk per file, keeping the headers. */
 export function splitDiffByFile(diff: string): string[] {
   if (!diff.trim()) return [];

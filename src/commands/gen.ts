@@ -114,6 +114,7 @@ export async function gen(opts: GenOptions = {}): Promise<number> {
         system,
         prompt,
         options,
+        contextWindow,
       });
     } catch (err) {
       stop();
