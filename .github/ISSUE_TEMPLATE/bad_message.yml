@@ -33,7 +33,7 @@ body:
     id: model
     attributes:
       label: Ollama model
-      placeholder: "qwen2.5-coder:7b"
+      placeholder: "gemma4:e4b"
     validations:
       required: true
   - type: dropdown

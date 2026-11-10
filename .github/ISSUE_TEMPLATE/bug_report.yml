@@ -64,7 +64,7 @@ body:
     attributes:
       label: Ollama model
       description: The `model` from your config, and `ollama --version` if relevant.
-      placeholder: "qwen2.5-coder:7b"
+      placeholder: "gemma4:e4b"
   - type: input
     id: git-client
     attributes:
