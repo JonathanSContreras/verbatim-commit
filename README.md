@@ -275,4 +275,4 @@ See `docs/git-commit-tool-plan.md` for the full design.
 
 ## Feedback
 
-This is a personal project and feedback is very welcome — especially on the prompts and the heuristic rules. Open an [issue](https://github.com/JonathanSContreras/verbatim-commit/issues) or start a discussion.
+This is a personal project and feedback is very welcome — especially on the prompts and the heuristic rules. Open an [issue](https://github.com/JonathanSContreras/verbatim-commit/issues), or see [CONTRIBUTING.md](CONTRIBUTING.md) if you'd like to send a fix.
