@@ -29,8 +29,7 @@
     "verbatim": "./dist/cli.js"
   },
   "files": [
-    "dist",
-    "hooks"
+    "dist"
   ],
   "scripts": {
     "build": "tsc",
@@ -38,7 +37,7 @@
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
     "test": "npm run build && node --test",
-    "prepare": "npm run build"
+    "prepack": "npm run build"
   },
   "engines": {
     "node": ">=18"

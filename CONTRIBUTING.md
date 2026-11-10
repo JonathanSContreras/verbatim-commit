@@ -14,7 +14,8 @@ You need Git, Node.js 18 or newer, and (for anything touching generation)
 ```sh
 git clone https://github.com/JonathanSContreras/verbatim-commit.git
 cd verbatim-commit
-npm install        # also builds dist/ via the prepare script
+npm install
+npm run build      # compile src/ to dist/
 npm link           # puts your local build on PATH as `verbatim`
 ```
 
