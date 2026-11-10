@@ -22,6 +22,8 @@ Set PlaybackSpeed 2.0
 # ---------- hidden setup ----------
 Hide
 Type "export PS1='$ '" Enter
+# Empty config dir, so the demo shows the defaults a new user gets.
+Type "rm -rf /tmp/shop-home && mkdir /tmp/shop-home && export VERBATIM_HOME=/tmp/shop-home" Enter
 Type "rm -rf /tmp/shop && mkdir /tmp/shop && cd /tmp/shop" Enter
 Type "git init -q && git config user.email demo@demo.dev && git config user.name Demo" Enter
 Type "git commit -q --allow-empty -m init" Enter
