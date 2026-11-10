@@ -25,7 +25,7 @@ several terminals.** Everything else should "just work," but verify.
       running) and reachable at `http://localhost:11434`. `verbatim gen` talks to
       a running server; it won't start one for you. If it's down you'll get
       `Ollama not reachable … Try: ollama serve`.
-- [ ] Model pulled: `ollama pull qwen2.5-coder:7b` (the cross-platform default; `gemma4:12b-mlx` is macOS-only, so use `qwen2.5-coder:7b` or `gemma4:12b` on Windows)
+- [ ] Model pulled: `ollama pull gemma4:e4b` (the cross-platform default; `gemma4:12b-mlx` is macOS-only, so use `gemma4:e4b` or `gemma4:12b` on Windows)
 
 ## Build & link
 - [ ] `npm install`

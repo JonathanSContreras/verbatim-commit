@@ -37,9 +37,9 @@ For private or proprietary codebases where sending diffs to a hosted LLM is a no
 - **Node.js ≥ 18**
 - **[Ollama](https://ollama.com)** running locally, with a model pulled:
   ```sh
-  ollama pull qwen2.5-coder:7b
+  ollama pull gemma4:e4b
   ```
-  The model is configurable; `qwen2.5-coder:7b` is the default (see [Choosing a model](#choosing-a-model)).
+  The model is configurable; `gemma4:e4b` is the default (see [Choosing a model](#choosing-a-model)).
 
 ## Install
 
@@ -109,7 +109,7 @@ This prevents premature logouts caused by minor discrepancies in local system cl
 
 The note is used for the reason only. The diff still decides what the message says changed, so anything the note mentions that isn't in the diff (other work, plans) is left out rather than listed. Without `-c`, nothing about generation changes.
 
-How well the reason makes it in depends on the model: `gemma4:12b` included it in every test run, while the `qwen2.5-coder:7b` default includes it less consistently (`r` to regenerate helps).
+How well the reason makes it in depends on the model: the `gemma4:e4b` default and `gemma4:12b` included it in every test run, while smaller or older models are less consistent (`r` to regenerate helps).
 
 ### Verify mode (the hook)
 
@@ -157,7 +157,7 @@ Per-repo wins — e.g. relaxed side projects, conventional/strict work repos. Ne
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `model` | `"qwen2.5-coder:7b"` | Ollama model name |
+| `model` | `"gemma4:e4b"` | Ollama model name |
 | `ollamaHost` | `"http://localhost:11434"` | Ollama base URL |
 | `contextWindow` | map (defaults cover the recommended models) | Per-model context window (tokens) |
 | `diffBudgetFraction` | `0.5` | Fraction of the context window reserved for diff content |
@@ -183,12 +183,13 @@ Any model in Ollama works. Message quality scales with model size, so pick your 
 
 | Model | Size | Notes |
 | --- | --- | --- |
-| **`qwen2.5-coder:7b`** (default) | ~4.7 GB | Code-tuned, cross-platform. Accurate and honest — never fabricated in testing. The balanced default. |
-| `gemma4:12b` | ~7.6 GB | **Most accurate and complete** output — best if you can spare the RAM (~10 GB) and bandwidth. Cross-platform. |
+| **`gemma4:e4b`** (default) | ~6.6 GB | Accurate and fast. Picks the right commit type, always adds a body for multi-file changes, and handles `-c` well. Cross-platform. |
+| `gemma4:12b` | ~7.7 GB | **Most accurate and complete**, especially on large commits, at about half the speed of `gemma4:e4b`. Needs ~10 GB of RAM. Cross-platform. |
 | `gemma4:12b-mlx` | ~6.8 GB | Same quality as `gemma4:12b`, Apple-Silicon-optimized (faster on Macs). **macOS only.** |
+| `qwen2.5-coder:7b` | ~4.7 GB | The previous default. Lighter, but often picks the wrong commit type, puts file paths in the scope, and skips the body on multi-file changes. |
 | `gemma3:4b` | ~3.3 GB | Lightest and fastest, lowest barrier — but less reliable on complex commits (can under-describe or invent). |
 
-**Recommendation:** the default (`qwen2.5-coder:7b`) balances accuracy and footprint well. If you want the best messages and have the headroom, use **`gemma4:12b`** — or **`gemma4:12b-mlx`** on a Mac for the same quality with faster inference. `gemma3:4b` is fine for speed/low-resource setups.
+**Recommendation:** the default (`gemma4:e4b`) balances accuracy and speed well. If you want the most complete messages and have the headroom, use **`gemma4:12b`**, or **`gemma4:12b-mlx`** on a Mac for the same quality with faster inference.
 
 ### How the default was chosen
 
@@ -198,8 +199,9 @@ This isn't just about being local and fast — accuracy matters, so the default 
 2. **Testing on real commits exposed its limits** — on non-trivial diffs it would hallucinate or omit changes (e.g. calling renames "updates," or inventing changes that weren't in the diff).
 3. **Moved to `qwen2.5-coder:7b`** — a clear upgrade that stayed accurate and stopped fabricating, while remaining cross-platform and reasonably light.
 4. **Also tested `gemma4:12b` / `gemma4:12b-mlx`** and found them the most accurate and complete — the recommended step up when you have the headroom.
+5. **Re-tested in November 2026 with eight models** (`qwen2.5-coder:7b`, `qwen3.5` 4B and 9B, `gemma4:e4b`, `gemma4:12b`, `ministral-3` 8B and 14B, `granite4.1:8b`) on 11 cases built from this repo's own commits, three runs each. `gemma4:e4b` matched `gemma4:12b` on choosing the commit type (32 of 33 runs, against 20 for `qwen2.5-coder:7b`), never skipped the body on a multi-file change, and used the `-c` reason every time, at about half the time per message of `gemma4:12b`. Bigger wasn't automatically better: `ministral-3:14b` scored below its 8B sibling. `qwen3.5:4b` was the only model that copied unrelated work from a `-c` note into the message.
 
-So `qwen2.5-coder:7b` ships as a deliberately honest default, with a clear path to higher accuracy.
+So `gemma4:e4b` ships as the default, with `gemma4:12b` as the step up. Thinking mode is turned off for models that have it: in the same tests it made `gemma4:12b` about 10x slower without better messages.
 
 To switch, set `model` (and a matching `contextWindow`) in `~/.verbatim/config.json` or a per-repo `.verbatimrc`:
 
@@ -217,8 +219,8 @@ The command isn't on your PATH. Install it with `npm install -g verbatim-commit`
 **`Ollama not reachable at http://localhost:11434`**
 Ollama isn't running. Start it (`ollama serve`, or launch the Ollama app) and retry.
 
-**`Model "qwen2.5-coder:7b" not found`**
-Pull it: `ollama pull qwen2.5-coder:7b` — or set a different `model` in your config (see [Choosing a model](#choosing-a-model)).
+**`Model "gemma4:e4b" not found`**
+Pull it: `ollama pull gemma4:e4b` — or set a different `model` in your config (see [Choosing a model](#choosing-a-model)). If you upgraded from 0.1.x, the default changed from `qwen2.5-coder:7b`; set `"model": "qwen2.5-coder:7b"` to keep using it.
 
 **`No staged changes`**
 `gen` only looks at staged changes — stage something first with `git add`.
@@ -262,7 +264,7 @@ Built with Claude (AI), which wrote most of the code, tests, and commit messages
 
 ## Limitations
 
-- **Message quality scales with the model.** Output is only as good as the local model you run — `qwen2.5-coder:7b` is the balanced default; smaller models like `gemma3:4b` give rougher messages, while `gemma4:12b` is more accurate (see [Choosing a model](#choosing-a-model)).
+- **Message quality scales with the model.** Output is only as good as the local model you run — `gemma4:e4b` is the balanced default; smaller models like `gemma3:4b` give rougher messages, while `gemma4:12b` is more complete (see [Choosing a model](#choosing-a-model)).
 
 ## Not in v1
 
