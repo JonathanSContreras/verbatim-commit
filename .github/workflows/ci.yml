@@ -32,7 +32,6 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
 
-      # `prepare` runs the build, so this also checks that `npm install` works.
       - run: npm ci
 
       - run: npm test
@@ -49,7 +48,11 @@ jobs:
         shell: bash
         timeout-minutes: 3
         run: |
-          npm link
+          # Install the packed tarball, the same files npm publish would ship,
+          # and fail if npm warns about install scripts (npm 11 flags any
+          # package that has a `prepare` script).
+          npm install -g "./$(npm pack --silent)" 2>&1 | tee install.log
+          if grep -q "install-scripts" install.log; then exit 1; fi
           verbatim --version
           verbatim gen --help
 
