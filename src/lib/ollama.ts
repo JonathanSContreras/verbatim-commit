@@ -62,6 +62,10 @@ export async function generate(params: GenerateParams): Promise<string> {
         prompt: params.prompt,
         system: params.system,
         stream: false,
+        // Thinking-capable models (gemma4, qwen3.5, …) otherwise reason
+        // silently before answering: 10–40x slower, often past the timeout,
+        // and no better at commit messages. Models without thinking ignore it.
+        think: false,
         options: params.options,
       }),
       signal: controller.signal,
