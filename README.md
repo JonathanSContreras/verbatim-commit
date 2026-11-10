@@ -44,8 +44,7 @@ For private or proprietary codebases where sending diffs to a hosted LLM is a no
 ## Install
 
 ```sh
-git clone https://github.com/JonathanSContreras/verbatim-commit.git && cd verbatim-commit
-./scripts/install.sh        # npm install + build + npm link
+npm install -g verbatim-commit
 ```
 
 This puts `verbatim` on your `PATH`. Then, in any repo where you want the commit-msg check:
@@ -55,13 +54,14 @@ verbatim install-hook
 ```
 
 <details>
-<summary>Manual install (without the script)</summary>
+<summary>Install from source</summary>
 
 ```sh
-npm install
-npm run build
-npm link
+git clone https://github.com/JonathanSContreras/verbatim-commit.git && cd verbatim-commit
+./scripts/install.sh        # npm install + build + npm link
 ```
+
+Or run the steps yourself: `npm install`, `npm run build`, `npm link`.
 </details>
 
 ## Usage
@@ -212,7 +212,7 @@ The defaults already include context windows for the models above, so switching 
 ## Troubleshooting
 
 **`verbatim: command not found`**
-The command isn't on your PATH. Run `./scripts/install.sh` (or `npm link`) from the project directory, and make sure your npm global bin is on your PATH.
+The command isn't on your PATH. Install it with `npm install -g verbatim-commit` (or, from a clone, `./scripts/install.sh`), and make sure npm's global bin directory is on your PATH. `npm prefix -g` shows where it is; the bin folder is inside it on macOS and Linux, and is that folder itself on Windows.
 
 **`Ollama not reachable at http://localhost:11434`**
 Ollama isn't running. Start it (`ollama serve`, or launch the Ollama app) and retry.
