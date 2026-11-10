@@ -273,6 +273,10 @@ Built with Claude (AI), which wrote most of the code, tests, and commit messages
 
 See `docs/git-commit-tool-plan.md` for the full design.
 
+## Write-up
+
+The design decisions are written up as a [case study](https://www.jonathancontreras.com/projects/verbatim-commit). The hook's terminal prompt has its own post: [Prompting From Inside a Git Hook Without Blocking CI](https://www.jonathancontreras.com/blog/git-hook-prompt-dev-tty).
+
 ## Feedback
 
 This is a personal project and feedback is very welcome — especially on the prompts and the heuristic rules. Open an [issue](https://github.com/JonathanSContreras/verbatim-commit/issues), or see [CONTRIBUTING.md](CONTRIBUTING.md) if you'd like to send a fix.
