@@ -1,0 +1,29 @@
+name: Feature request
+description: Suggest an idea or a change to how something works.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: The situation you ran into, rather than the solution — that helps find the simplest fix.
+      placeholder: When I commit from VS Code, I ...
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything you've tried or considered instead?
+  - type: checkboxes
+    id: local-first
+    attributes:
+      label: Local-first
+      description: Verbatim keeps diffs on your machine by default. Ideas that need a cloud service are fine to suggest, but would stay opt-in.
+      options:
+        - label: I've read this

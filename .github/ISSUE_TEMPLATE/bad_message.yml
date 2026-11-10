@@ -1,0 +1,57 @@
+name: Bad generated message
+description: "`verbatim gen` wrote a message that's wrong, vague, or describes something not in the diff."
+labels: ["prompt"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        These reports are what improve the prompts. The diff is the most useful part —
+        trim it or swap in placeholder names if the real code is private.
+  - type: textarea
+    id: diff
+    attributes:
+      label: Staged diff
+      description: Output of `git diff --cached` (trimmed is fine).
+      render: diff
+    validations:
+      required: true
+  - type: textarea
+    id: generated
+    attributes:
+      label: Message it generated
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What's wrong with it / what you'd expect
+      placeholder: It says "add caching" but the diff only renames a variable.
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Ollama model
+      placeholder: "qwen2.5-coder:7b"
+    validations:
+      required: true
+  - type: dropdown
+    id: format
+    attributes:
+      label: messageFormat
+      options:
+        - plain
+        - conventional
+    validations:
+      required: true
+  - type: input
+    id: context
+    attributes:
+      label: --context note (if you used one)
+  - type: input
+    id: version
+    attributes:
+      label: verbatim version
+      description: Output of `verbatim --version`
+      placeholder: "0.1.0"
