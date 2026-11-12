@@ -34,7 +34,7 @@ several terminals.** Everything else should "just work," but verify.
 - [ ] `verbatim --version` works from a new terminal (command is on PATH)
 
 ## Unit tests
-- [ ] `npm test` → **all passing**, 0 failing (54 tests as of November 2026; these are pure, and cross-platform-sensitive bits like path handling run here)
+- [ ] `npm test` → **all passing**, 0 failing (these are pure, and cross-platform-sensitive bits like path handling run here)
 
 ## Generate mode (`verbatim gen`)
 Test in **both PowerShell and Git Bash** (and Windows Terminal if available):
