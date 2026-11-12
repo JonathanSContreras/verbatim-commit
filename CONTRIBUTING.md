@@ -73,6 +73,10 @@ dogfood it.
   hurt another.
 - AI-assisted contributions are welcome (this project is built that way), as long
   as you've read the change and can explain it.
+- There needs to be a person behind every PR: someone who uses the tool or cares
+  where it's going, and who will answer review comments. PRs opened by autonomous
+  agents or for bounty platforms will be closed, however good the change is.
+  Good first issues in particular are kept for people new to the project.
 
 ## Reporting bugs
 
